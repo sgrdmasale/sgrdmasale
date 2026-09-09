@@ -1,0 +1,5 @@
+﻿*.zip
+*.log
+api/.mongodb-binaries/
+node_modules/
+.env
