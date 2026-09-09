@@ -11,28 +11,41 @@ export default function PromotionalStripe({ onStateChange }) {
   useEffect(() => {
     let isMounted = true;
 
-    const fetchOffers = async () => {
+    const fetchOffersAPI = async () => {
       try {
-        // Fetch only active offers
         const offersRes = await pb.collection('offers').getList(1, 10, {
           filter: 'is_active = true',
           $autoCancel: false
         });
-
-        if (isMounted) {
-          setOffers(offersRes.items);
-          if (onStateChange) onStateChange(offersRes.items.length > 0);
+        
+        if (!offersRes || typeof offersRes !== 'object') {
+          console.error('Failed to fetch promotional offers: Invalid response', offersRes);
+          return { data: [], error: 'Invalid API response format' };
         }
+        
+        const items = offersRes.items;
+        if (!Array.isArray(items)) {
+          console.warn('Failed to fetch promotional offers: Response missing items array', offersRes);
+          return { data: [], error: null };
+        }
+        
+        return { data: items, error: null };
       } catch (error) {
+        return { data: [], error: error.message || 'Unknown error' };
+      }
+    };
+
+    const fetchOffers = async () => {
+      const { data, error } = await fetchOffersAPI();
+      
+      if (error) {
         console.error('Failed to fetch promotional offers:', error);
-        if (isMounted) {
-          setOffers([]);
-          if (onStateChange) onStateChange(false);
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+      }
+      
+      if (isMounted) {
+        setOffers(data || []);
+        if (onStateChange) onStateChange((data || []).length > 0);
+        setIsLoading(false);
       }
     };
 
@@ -54,12 +67,12 @@ export default function PromotionalStripe({ onStateChange }) {
   };
 
   // Return null if loading, failed, or no active offers (hides strip completely)
-  if (isLoading || offers.length === 0) {
+  if (isLoading || !offers || offers.length === 0) {
     return null;
   }
 
   // Create scrolling content dynamically from fetched offers
-  const scrollingContent = offers.map((offer, idx) => {
+  const scrollingContent = (offers || []).map((offer, idx) => {
     // Only display title and description
     const textParts = [
       offer.title,

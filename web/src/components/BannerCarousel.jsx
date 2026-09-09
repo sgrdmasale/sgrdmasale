@@ -26,8 +26,7 @@ const BannerCarousel = () => {
   );
 
   useEffect(() => {
-    const fetchBanners = async () => {
-      console.log('[BannerCarousel] Starting to fetch banners...');
+    const fetchBannersAPI = async () => {
       try {
         const result = await pb.collection('banners').getList(1, 50, {
           filter: 'is_active = true',
@@ -35,9 +34,39 @@ const BannerCarousel = () => {
           $autoCancel: false
         });
         
-        console.log('[BannerCarousel] Successfully fetched banner records:', result.items);
+        if (!result || typeof result !== 'object') {
+          console.error('[BannerCarousel] Invalid response:', result);
+          return { data: [], error: 'Invalid API response format' };
+        }
+        
+        const items = result.items;
+        if (!Array.isArray(items)) {
+          console.warn('[BannerCarousel] Response missing items array, defaulting to empty.', result);
+          return { data: [], error: null };
+        }
+        
+        return { data: items, error: null };
+      } catch (err) {
+        return { data: [], error: err.message || 'Failed to fetch banners' };
+      }
+    };
 
-        const processedBanners = result.items.map(record => {
+    const fetchBanners = async () => {
+      console.log('[BannerCarousel] Starting to fetch banners...');
+      
+      const { data, error } = await fetchBannersAPI();
+      
+      if (error) {
+        console.error('[BannerCarousel] Error fetching banner images:', error);
+        setError(error);
+        setLoading(false);
+        return;
+      }
+      
+      console.log('[BannerCarousel] Successfully fetched banner records:', data);
+
+      try {
+        const processedBanners = (data || []).map(record => {
           const url = pb.files.getUrl(record, record.image);
           // Handle product_id whether it's a single string or an array
           let productId = null;
@@ -58,9 +87,9 @@ const BannerCarousel = () => {
         } else {
           console.log('[BannerCarousel] No active banners found in the collection.');
         }
-      } catch (err) {
-        console.error('[BannerCarousel] Error fetching banner images:', err);
-        setError(err.message);
+      } catch (processingError) {
+        console.error('[BannerCarousel] Error processing banners:', processingError);
+        setError('Failed to process banners');
       } finally {
         setLoading(false);
       }

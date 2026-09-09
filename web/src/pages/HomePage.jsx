@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import ProductsList from '@/components/ProductsList.jsx';
 import ReviewCard from '@/components/ReviewCard.jsx';
 import BannerCarousel from '@/components/BannerCarousel.jsx';
+import ErrorBoundary from '@/components/ErrorBoundary.jsx';
 import pb from '@/lib/pocketbaseClient.js';
 const dummyReviews = [];
 const HomePage = () => {
@@ -35,7 +36,9 @@ const HomePage = () => {
       </Helmet>
 
       {/* Banner Carousel Section */}
-      <BannerCarousel />
+      <ErrorBoundary>
+        <BannerCarousel />
+      </ErrorBoundary>
 
       {/* Features */}
       <section className="py-20 bg-background">

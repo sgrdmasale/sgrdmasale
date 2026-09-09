@@ -23,6 +23,7 @@ import { useCart } from '@/hooks/useCart.jsx';
 import { useCartSidebar } from '@/contexts/CartSidebarContext.jsx';
 
 import PromotionalStripe from '@/components/PromotionalStripe.jsx';
+import ErrorBoundary from '@/components/ErrorBoundary.jsx';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -1250,11 +1251,13 @@ const Header = () => {
           PROMOTIONAL STRIPE
       ================================================== */}
 
-      <PromotionalStripe
-        onStateChange={
-          setHasPromo
-        }
-      />
+      <ErrorBoundary>
+        <PromotionalStripe
+          onStateChange={
+            setHasPromo
+          }
+        />
+      </ErrorBoundary>
 
 
       {/* ==================================================
