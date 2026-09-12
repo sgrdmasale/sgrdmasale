@@ -10,7 +10,8 @@
     "build": "npm run build --prefix web",
     "preview": "npm run preview --prefix web",
     "lint": "npm run lint --prefix web && npm run lint --prefix api",
-    "install:all": "npm install && npm install --prefix web && npm install --prefix api"
+    "install:all": "npm install && npm install --prefix web && npm install --prefix api",
+    "postinstall": "npm install --prefix api"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"

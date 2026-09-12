@@ -3,3 +3,4 @@
 api/.mongodb-binaries/
 node_modules/
 .env
+web/dist/
