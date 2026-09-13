@@ -11,9 +11,11 @@
     "preview": "npm run preview --prefix web",
     "lint": "npm run lint --prefix web && npm run lint --prefix api",
     "install:all": "npm install && npm install --prefix web && npm install --prefix api",
-    "postinstall": "npm install --prefix api"
+    "postinstall": "cd api && npm install",
+    "package:hostinger": "node deploy/package-for-hostinger.mjs"
   },
   "devDependencies": {
+    "archiver": "^7.0.1",
     "concurrently": "^9.1.0"
   }
 }
