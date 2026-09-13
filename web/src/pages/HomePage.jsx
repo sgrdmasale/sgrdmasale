@@ -58,7 +58,7 @@ const HomePage = () => {
             desc: 'Delivered fresh to your doorstep'
           }, {
             icon: Star,
-            title: 'Trusted Since 1947',
+            title: 'Trusted Since 2017',
             desc: 'Three generations of expertise'
           }].map((feature, index) => <motion.div key={index} initial={{
             opacity: 0,

@@ -1,198 +1,1867 @@
-import React, { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet';
-import pb from '@/lib/pocketbaseClient.js';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
-const TaxesManagement = () => {
-  const [taxes, setTaxes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTax, setEditingTax] = useState(null);
-  const [formData, setFormData] = useState({
-    tax_name: '', tax_percentage: '', tax_type: 'percentage', applicable_to: 'all_products', status: true
-  });
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  const fetchTaxes = async () => {
-    setLoading(true);
-    try {
-      const records = await pb.collection('taxes').getFullList({ sort: '-created', $autoCancel: false });
-      setTaxes(records);
-    } catch (error) {
-      toast.error('Failed to load taxes');
-    } finally {
-      setLoading(false);
+
+/* =========================================================
+   SGRD MASALE
+   EARTHY HERITAGE / PREMIUM SPICE THEME
+   ========================================================= */
+
+
+/* =========================================================
+   1. DESIGN TOKENS
+   ========================================================= */
+
+@layer base {
+
+  :root {
+
+    /* -------------------------------------------------------
+       Main Colors
+       ------------------------------------------------------- */
+
+    --background: 42 51% 89%;
+    --foreground: 20 66% 12%;
+
+    /* White Cards */
+    --card: 0 0% 100%;
+    --card-foreground: 20 66% 12%;
+
+    /* Popover */
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 66% 12%;
+
+
+    /* -------------------------------------------------------
+       PRIMARY
+       Deep Spice Brown
+       #622B14
+       ------------------------------------------------------- */
+
+    --primary: 20 66% 23%;
+    --primary-foreground: 42 51% 94%;
+
+
+    /* -------------------------------------------------------
+       SECONDARY
+       Terracotta
+       #995F2F
+       ------------------------------------------------------- */
+
+    --secondary: 29 53% 39%;
+    --secondary-foreground: 0 0% 100%;
+
+
+    /* -------------------------------------------------------
+       MUTED
+       Muted Olive
+       #978F66
+       ------------------------------------------------------- */
+
+    --muted: 55 20% 50%;
+    --muted-foreground: 20 25% 30%;
+
+
+    /* -------------------------------------------------------
+       ACCENT
+       Warm Cream
+       #E4D6A9
+       ------------------------------------------------------- */
+
+    --accent: 42 51% 78%;
+    --accent-foreground: 20 66% 15%;
+
+
+    /* -------------------------------------------------------
+       Extra Colors
+       ------------------------------------------------------- */
+
+    --destructive: 0 65% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 90 25% 35%;
+    --success-foreground: 0 0% 100%;
+
+
+    /* -------------------------------------------------------
+       Borders / Inputs
+       ------------------------------------------------------- */
+
+    --border: 40 30% 75%;
+    --input: 40 30% 75%;
+    --ring: 20 66% 23%;
+
+
+    /* -------------------------------------------------------
+       Radius
+       ------------------------------------------------------- */
+
+    --radius: 0.75rem;
+
+
+    /* -------------------------------------------------------
+       Layout
+       ------------------------------------------------------- */
+
+    /* Increased for larger logo */
+    --header-height: 5rem;
+    --header-height-md: 6.5rem;
+
+    /* Increased logo */
+    --logo-size: 4rem;
+    --logo-size-md: 6rem;
+
+    --promo-strip-height: 2.25rem;
+    --promo-strip-height-md: 2.75rem;
+
+
+    /* -------------------------------------------------------
+       Shadows
+       ------------------------------------------------------- */
+
+    --shadow-sm:
+      0 2px 8px rgba(98, 43, 20, 0.06);
+
+    --shadow-md:
+      0 8px 25px rgba(98, 43, 20, 0.10);
+
+    --shadow-lg:
+      0 16px 45px rgba(98, 43, 20, 0.14);
+
+
+    /* -------------------------------------------------------
+       Brand Hex Variables
+       ------------------------------------------------------- */
+
+    --spice-brown: #622B14;
+    --terracotta: #995F2F;
+    --olive: #978F66;
+    --cream: #E4D6A9;
+    --gold: #C69A45;
+
+  }
+
+
+  /* =========================================================
+     DARK MODE
+     ========================================================= */
+
+  .dark {
+
+    --background: 20 30% 8%;
+    --foreground: 42 51% 94%;
+
+    --card: 20 25% 11%;
+    --card-foreground: 42 51% 94%;
+
+    --popover: 20 25% 10%;
+    --popover-foreground: 42 51% 94%;
+
+
+    --primary: 29 53% 45%;
+    --primary-foreground: 42 51% 96%;
+
+    --secondary: 20 45% 30%;
+    --secondary-foreground: 42 51% 94%;
+
+    --muted: 55 15% 28%;
+    --muted-foreground: 42 20% 72%;
+
+    --accent: 42 51% 70%;
+    --accent-foreground: 20 50% 10%;
+
+    --destructive: 0 60% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 90 25% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --border: 25 20% 22%;
+    --input: 25 20% 22%;
+    --ring: 29 53% 45%;
+
+  }
+
+}
+
+
+/* =========================================================
+   2. GLOBAL RESET & BASE
+   ========================================================= */
+
+@layer base {
+
+  *,
+  *::before,
+  *::after {
+    @apply border-border;
+  }
+
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+
+  body {
+    @apply bg-background text-foreground antialiased;
+
+    font-family: 'Outfit', sans-serif;
+
+    min-width: 320px;
+
+    overflow-x: hidden;
+
+    margin: 0;
+  }
+
+
+  /* -------------------------------------------------------
+     Scrollbar
+     ------------------------------------------------------- */
+
+  body::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  body::-webkit-scrollbar-track {
+    background: #E4D6A9;
+  }
+
+  body::-webkit-scrollbar-thumb {
+    background: #622B14;
+    border-radius: 10px;
+  }
+
+  body::-webkit-scrollbar-thumb:hover {
+    background: #995F2F;
+  }
+
+
+  /* -------------------------------------------------------
+     Images
+     ------------------------------------------------------- */
+
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+
+  button {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+
+  ::selection {
+    background: #622B14;
+    color: #E4D6A9;
+  }
+
+
+  /* =========================================================
+     TYPOGRAPHY
+     ========================================================= */
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply text-balance tracking-tight;
+
+    margin-top: 0;
+  }
+
+
+  h1 {
+    @apply text-3xl sm:text-4xl md:text-5xl lg:text-6xl;
+    @apply font-extrabold leading-tight;
+
+    letter-spacing: -0.025em;
+  }
+
+
+  h2 {
+    @apply text-2xl sm:text-3xl md:text-4xl;
+    @apply font-bold leading-tight;
+
+    letter-spacing: -0.02em;
+  }
+
+
+  h3 {
+    @apply text-xl sm:text-2xl md:text-3xl;
+    @apply font-semibold leading-snug;
+  }
+
+
+  h4 {
+    @apply text-lg sm:text-xl md:text-2xl;
+    @apply font-semibold leading-snug;
+  }
+
+
+  h5 {
+    @apply text-base sm:text-lg md:text-xl;
+    @apply font-medium;
+  }
+
+
+  h6 {
+    @apply text-sm sm:text-base md:text-lg;
+    @apply font-medium;
+  }
+
+
+  p {
+    @apply leading-relaxed;
+
+    max-width: 65ch;
+  }
+
+
+  /* =========================================================
+     FORM ELEMENTS
+     ========================================================= */
+
+  input,
+  textarea,
+  select {
+    @apply outline-none;
+  }
+
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    border-color: #622B14;
+
+    box-shadow:
+      0 0 0 3px rgba(98, 43, 20, 0.10);
+  }
+
+
+  input::placeholder,
+  textarea::placeholder {
+    color: #978F66;
+  }
+
+
+  /* Remove number arrows */
+
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+
+  input[type='number'] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+
+}
+
+
+/* =========================================================
+   3. COMPONENTS
+   ========================================================= */
+
+@layer components {
+
+
+  /* =========================================================
+     CONTAINER
+     ========================================================= */
+
+  .mobile-container {
+    @apply w-full mx-auto;
+    @apply px-4 sm:px-6 lg:px-8;
+
+    max-width: 1400px;
+  }
+
+
+  .section {
+    @apply py-10 sm:py-14 lg:py-20;
+  }
+
+
+  /* =========================================================
+     HEADER
+     ========================================================= */
+
+  .header-wrapper {
+    height: var(--header-height);
+
+    @apply flex items-center justify-between;
+    @apply w-full;
+    @apply px-4 sm:px-6 lg:px-8;
+    @apply transition-all duration-300;
+  }
+
+
+  @media (min-width: 768px) {
+
+    .header-wrapper {
+      height: var(--header-height-md);
     }
-  };
 
-  useEffect(() => { fetchTaxes(); }, []);
+  }
 
-  const handleOpenModal = (tax = null) => {
-    if (tax) {
-      setEditingTax(tax);
-      setFormData({
-        tax_name: tax.tax_name,
-        tax_percentage: tax.tax_percentage,
-        tax_type: tax.tax_type,
-        applicable_to: tax.applicable_to,
-        status: tax.status !== false
-      });
-    } else {
-      setEditingTax(null);
-      setFormData({ tax_name: '', tax_percentage: '', tax_type: 'percentage', applicable_to: 'all_products', status: true });
+
+  /* -------------------------------------------------------
+     Larger SGRD Logo
+     ------------------------------------------------------- */
+
+  .header-logo-img {
+    width: var(--logo-size);
+    height: var(--logo-size);
+
+    @apply object-contain;
+    @apply transition-transform duration-300;
+  }
+
+
+  .header-logo-img:hover {
+    @apply scale-105;
+  }
+
+
+  @media (min-width: 768px) {
+
+    .header-logo-img {
+      width: var(--logo-size-md);
+      height: var(--logo-size-md);
     }
-    setIsModalOpen(true);
-  };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (editingTax) {
-        await pb.collection('taxes').update(editingTax.id, formData, { $autoCancel: false });
-        toast.success('Tax updated');
-      } else {
-        await pb.collection('taxes').create(formData, { $autoCancel: false });
-        toast.success('Tax created');
-      }
-      setIsModalOpen(false);
-      fetchTaxes();
-    } catch (error) {
-      toast.error(error.message || 'Failed to save tax');
+  }
+
+
+  /* =========================================================
+     NAVIGATION
+     ========================================================= */
+
+  .nav-link {
+    @apply relative;
+    @apply text-sm md:text-base;
+    @apply font-medium;
+
+    color: #622B14;
+
+    transition:
+      color 200ms ease,
+      opacity 200ms ease;
+  }
+
+
+  .nav-link::after {
+    content: '';
+
+    position: absolute;
+
+    left: 0;
+    bottom: -6px;
+
+    width: 100%;
+    height: 2px;
+
+    background: #C69A45;
+
+    transform: scaleX(0);
+
+    transform-origin: center;
+
+    transition: transform 200ms ease;
+  }
+
+
+  .nav-link:hover {
+    color: #995F2F;
+  }
+
+
+  .nav-link:hover::after {
+    transform: scaleX(1);
+  }
+
+
+  /* =========================================================
+     PROMOTIONAL STRIP
+     ========================================================= */
+
+  .promo-strip {
+    position: fixed;
+
+    top: 0;
+    left: 0;
+    right: 0;
+
+    z-index: 100;
+
+    height: var(--promo-strip-height);
+
+    @apply flex items-center justify-center;
+    @apply overflow-hidden;
+
+    background:
+      linear-gradient(
+        90deg,
+        #622B14,
+        #995F2F,
+        #622B14
+      );
+
+    background-size: 200% auto;
+
+    color: #E4D6A9;
+
+    animation:
+      promo-shimmer 7s ease-in-out infinite;
+
+    box-shadow:
+      0 2px 10px rgba(0, 0, 0, 0.12);
+  }
+
+
+  @media (min-width: 768px) {
+
+    .promo-strip {
+      height: var(--promo-strip-height-md);
     }
-  };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this tax rule?')) {
-      try {
-        await pb.collection('taxes').delete(id, { $autoCancel: false });
-        toast.success('Tax deleted');
-        fetchTaxes();
-      } catch (error) {
-        toast.error('Failed to delete tax');
-      }
-    }
-  };
+  }
 
-  return (
-    <div className="space-y-6">
-      <Helmet><title>Taxes - Admin</title></Helmet>
-      
-      <div className="flex justify-between items-center">
-        <h1 className="admin-page-title mb-0">Tax Management</h1>
-        <Button onClick={() => handleOpenModal()}><Plus className="w-4 h-4 mr-2" /> Add Tax Rule</Button>
-      </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <div className="admin-table-container border-0">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-muted/50">
-                <tr>
-                  <th className="p-4 font-medium">Name</th>
-                  <th className="p-4 font-medium">Value</th>
-                  <th className="p-4 font-medium">Type</th>
-                  <th className="p-4 font-medium">Applies To</th>
-                  <th className="p-4 font-medium">Status</th>
-                  <th className="p-4 font-medium text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr><td colSpan="6" className="p-4 text-center">Loading...</td></tr>
-                ) : taxes.length === 0 ? (
-                  <tr><td colSpan="6" className="p-4 text-center text-muted-foreground">No tax rules found</td></tr>
-                ) : (
-                  taxes.map(tax => (
-                    <tr key={tax.id} className="border-t">
-                      <td className="p-4 font-medium">{tax.tax_name}</td>
-                      <td className="p-4">{tax.tax_percentage}{tax.tax_type === 'percentage' ? '%' : ' (Fixed)'}</td>
-                      <td className="p-4 capitalize">{tax.tax_type.replace('_', ' ')}</td>
-                      <td className="p-4 capitalize">{tax.applicable_to.replace('_', ' ')}</td>
-                      <td className="p-4">
-                        <span className={`px-2 py-1 rounded-full text-xs ${tax.status !== false ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                          {tax.status !== false ? 'Active' : 'Inactive'}
-                        </span>
-                      </td>
-                      <td className="p-4 text-right space-x-2">
-                        <Button variant="ghost" size="icon" onClick={() => handleOpenModal(tax)}>
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(tax.id)}>
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+  .promo-strip-marquee {
+    @apply relative w-full overflow-hidden;
+  }
 
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editingTax ? 'Edit Tax Rule' : 'Add New Tax Rule'}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-            <div className="space-y-2">
-              <Label>Tax Name *</Label>
-              <Input required placeholder="e.g., GST 18%" value={formData.tax_name} onChange={e => setFormData({...formData, tax_name: e.target.value})} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Value *</Label>
-                <Input type="number" step="0.01" required value={formData.tax_percentage} onChange={e => setFormData({...formData, tax_percentage: e.target.value})} />
-              </div>
-              <div className="space-y-2">
-                <Label>Type</Label>
-                <select 
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  value={formData.tax_type} 
-                  onChange={e => setFormData({...formData, tax_type: e.target.value})}
-                >
-                  <option value="percentage">Percentage (%)</option>
-                  <option value="fixed_amount">Fixed Amount</option>
-                </select>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Applies To</Label>
-              <select 
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                value={formData.applicable_to} 
-                onChange={e => setFormData({...formData, applicable_to: e.target.value})}
-              >
-                <option value="all_products">All Products</option>
-                <option value="specific_categories">Specific Categories</option>
-              </select>
-            </div>
-            <div className="space-y-2">
-              <Label>Status</Label>
-              <select 
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                value={formData.status} 
-                onChange={e => setFormData({...formData, status: e.target.value === 'true'})}
-              >
-                <option value="true">Active</option>
-                <option value="false">Inactive</option>
-              </select>
-            </div>
-            <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-              <Button type="submit">Save Tax Rule</Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-};
 
-export default TaxesManagement;
+  .promo-strip-content {
+    @apply flex items-center;
+    @apply gap-6 sm:gap-8;
+    @apply whitespace-nowrap;
+
+    animation:
+      marquee 30s linear infinite;
+
+    will-change: transform;
+  }
+
+
+  .promo-strip:hover
+  .promo-strip-content {
+    animation-play-state: paused;
+  }
+
+
+  .promo-strip-item {
+    @apply flex items-center gap-2;
+    @apply font-semibold tracking-wide;
+    @apply text-xs sm:text-sm md:text-base;
+  }
+
+
+  /* =========================================================
+     BUTTONS
+     ========================================================= */
+
+  .brand-button {
+    @apply inline-flex;
+    @apply items-center justify-center;
+    @apply gap-2;
+    @apply min-h-11;
+    @apply px-5 sm:px-6;
+    @apply rounded-xl;
+
+    background: #622B14;
+    color: #E4D6A9;
+
+    @apply font-semibold;
+    @apply transition-all duration-200;
+
+    box-shadow:
+      0 4px 12px rgba(98, 43, 20, 0.18);
+  }
+
+
+  .brand-button:hover {
+    background: #995F2F;
+
+    @apply -translate-y-0.5;
+
+    box-shadow:
+      0 8px 20px rgba(98, 43, 20, 0.25);
+  }
+
+
+  .brand-button:active {
+    transform: translateY(0);
+  }
+
+
+  .saffron-button {
+    @apply inline-flex;
+    @apply items-center justify-center;
+    @apply gap-2;
+    @apply min-h-11;
+    @apply px-5 sm:px-6;
+    @apply rounded-xl;
+
+    background: #995F2F;
+    color: #FFFFFF;
+
+    @apply font-semibold;
+    @apply transition-all duration-200;
+  }
+
+
+  .saffron-button:hover {
+    background: #622B14;
+
+    @apply -translate-y-0.5;
+    @apply shadow-lg;
+  }
+
+
+  .outline-button {
+    @apply inline-flex;
+    @apply items-center justify-center;
+    @apply gap-2;
+    @apply min-h-11;
+    @apply px-5 sm:px-6;
+    @apply rounded-xl;
+
+    background: transparent;
+
+    border: 1.5px solid #622B14;
+
+    color: #622B14;
+
+    @apply font-semibold;
+    @apply transition-all duration-200;
+  }
+
+
+  .outline-button:hover {
+    background: #622B14;
+    color: #E4D6A9;
+  }
+
+
+  /* =========================================================
+     CARDS
+     ========================================================= */
+
+  .interactive-card {
+    @apply bg-card;
+    @apply text-card-foreground;
+    @apply rounded-2xl;
+    @apply border;
+    @apply overflow-hidden;
+    @apply transition-all duration-300;
+
+    box-shadow: var(--shadow-sm);
+  }
+
+
+  .interactive-card:hover {
+    @apply -translate-y-1;
+
+    box-shadow: var(--shadow-md);
+
+    border-color:
+      rgba(98, 43, 20, 0.25);
+  }
+
+
+  .product-card {
+    @apply bg-white;
+    @apply rounded-2xl;
+    @apply overflow-hidden;
+    @apply border;
+    @apply transition-all duration-300;
+
+    border-color: #E4D6A9;
+
+    box-shadow:
+      0 3px 12px rgba(98, 43, 20, 0.06);
+  }
+
+
+  .product-card:hover {
+    @apply -translate-y-1;
+
+    box-shadow:
+      0 12px 30px rgba(98, 43, 20, 0.12);
+  }
+
+
+  .product-card-image {
+    @apply relative;
+    @apply overflow-hidden;
+
+    background: #E4D6A9;
+
+    aspect-ratio: 1 / 1;
+  }
+
+
+  .product-card-image img {
+    @apply w-full h-full;
+    @apply object-cover;
+    @apply transition-transform duration-500;
+  }
+
+
+  .product-card:hover
+  .product-card-image img {
+    @apply scale-105;
+  }
+
+
+  .product-card-title {
+    color: #622B14;
+
+    @apply font-semibold;
+  }
+
+
+  .product-card-price {
+    color: #995F2F;
+
+    @apply font-bold;
+  }
+
+
+  /* =========================================================
+     BADGES
+     ========================================================= */
+
+  .spice-badge {
+    @apply inline-flex;
+    @apply items-center;
+    @apply gap-1;
+    @apply px-3 py-1;
+    @apply rounded-full;
+
+    background: #622B14;
+    color: #E4D6A9;
+
+    @apply text-xs;
+    @apply font-semibold;
+  }
+
+
+  .gold-badge {
+    @apply inline-flex;
+    @apply items-center;
+    @apply gap-1;
+    @apply px-3 py-1;
+    @apply rounded-full;
+
+    background: #C69A45;
+    color: #3B2116;
+
+    @apply text-xs;
+    @apply font-bold;
+  }
+
+
+  .olive-badge {
+    @apply inline-flex;
+    @apply items-center;
+    @apply gap-1;
+    @apply px-3 py-1;
+
+    background: #978F66;
+    color: #FFFFFF;
+
+    @apply rounded-full;
+    @apply text-xs;
+    @apply font-semibold;
+  }
+
+
+  /* =========================================================
+     HERO
+     ========================================================= */
+
+  .hero-section {
+    position: relative;
+
+    @apply w-full;
+    @apply overflow-hidden;
+
+    background: #622B14;
+    color: #E4D6A9;
+  }
+
+
+  .hero-content {
+    @apply relative;
+    @apply z-10;
+    @apply w-full;
+    @apply px-4 sm:px-6 lg:px-8;
+    @apply py-14 sm:py-20 lg:py-28;
+
+    max-width: 1400px;
+
+    margin: 0 auto;
+  }
+
+
+  .hero-title {
+    color: #E4D6A9;
+
+    @apply font-extrabold;
+  }
+
+
+  .hero-subtitle {
+    color:
+      rgba(228, 214, 169, 0.85);
+
+    @apply text-base sm:text-lg lg:text-xl;
+  }
+
+
+  /* =========================================================
+     SECTION TITLE
+     ========================================================= */
+
+  .section-heading {
+    color: #622B14;
+
+    @apply text-center;
+    @apply font-bold;
+  }
+
+
+  .section-subtitle {
+    color: #978F66;
+
+    @apply text-center;
+    @apply mx-auto;
+  }
+
+
+  .section-divider {
+    width: 60px;
+    height: 3px;
+
+    margin: 12px auto 20px;
+
+    background: #C69A45;
+
+    border-radius: 999px;
+  }
+
+
+  /* =========================================================
+     FULL-WIDTH BANNER CAROUSEL
+     
+     Recommended image:
+     1920 × 600 px
+     Aspect ratio:
+     16 / 5
+     ========================================================= */
+
+  .banner-carousel-container {
+    @apply relative;
+    @apply w-full;
+    @apply overflow-hidden;
+
+    width: 100%;
+
+    /*
+      Keeps the container proportional to a
+      1920 × 600 banner.
+    */
+    aspect-ratio: 16 / 5;
+
+    /*
+      Prevents the banner from becoming too small
+      on very narrow devices.
+    */
+    min-height: 220px;
+
+    background: #E4D6A9;
+  }
+
+
+  /* -------------------------------------------------------
+     Banner Track
+
+     IMPORTANT:
+     No scroll animation here.
+
+     This prevents a single banner from moving away
+     and leaving empty space.
+     ------------------------------------------------------- */
+
+  .banner-carousel-track {
+    @apply flex;
+
+    width: 100%;
+    height: 100%;
+
+    transform: translateX(0);
+
+    will-change: transform;
+  }
+
+
+  /* -------------------------------------------------------
+     Individual Banner
+     ------------------------------------------------------- */
+
+  .banner-carousel-item {
+    @apply flex-shrink-0;
+
+    position: relative;
+
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden;
+  }
+
+
+  /* -------------------------------------------------------
+     Banner Image
+
+     object-fit: cover makes the image fill the
+     complete banner area.
+     ------------------------------------------------------- */
+
+  .banner-carousel-image {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    max-width: none;
+
+    object-fit: cover;
+
+    object-position: center center;
+
+    transition:
+      transform 700ms ease;
+  }
+
+
+  /* Subtle desktop hover */
+
+  .banner-carousel-item:hover
+  .banner-carousel-image {
+    transform: scale(1.01);
+  }
+
+
+  /* =========================================================
+     IMAGE MANAGER
+     ========================================================= */
+
+  .image-dropzone {
+    @apply flex flex-col;
+    @apply items-center justify-center;
+    @apply gap-3;
+    @apply w-full;
+    @apply min-h-[180px];
+    @apply p-5 sm:p-8;
+    @apply text-center;
+    @apply border-2 border-dashed;
+    @apply rounded-xl;
+
+    border-color: #978F66;
+
+    @apply cursor-pointer;
+    @apply transition-all duration-200;
+  }
+
+
+  .image-dropzone:hover {
+    background:
+      rgba(228, 214, 169, 0.35);
+
+    border-color: #622B14;
+  }
+
+
+  .image-dropzone.active {
+    border-color: #622B14;
+
+    background:
+      rgba(98, 43, 20, 0.05);
+  }
+
+
+  .image-grid-item {
+    @apply relative;
+    @apply rounded-xl;
+    @apply overflow-hidden;
+    @apply border;
+
+    background: #E4D6A9;
+
+    @apply aspect-square;
+    @apply transition-all duration-200;
+  }
+
+
+  .image-grid-item:hover
+  .image-grid-item-overlay {
+    opacity: 1;
+  }
+
+
+  .image-grid-item.primary {
+    @apply ring-2 ring-offset-2;
+
+    --tw-ring-color: #622B14;
+    --tw-ring-offset-color: #E4D6A9;
+  }
+
+
+  .image-grid-item-overlay {
+    @apply absolute inset-0;
+
+    background:
+      rgba(59, 33, 22, 0.60);
+
+    @apply opacity-0;
+    @apply transition-opacity duration-200;
+
+    @apply flex flex-col;
+    @apply justify-between;
+
+    @apply p-2;
+  }
+
+
+  /* =========================================================
+     IMAGE CAROUSEL
+     ========================================================= */
+
+  .image-carousel-main {
+    @apply relative;
+    @apply rounded-2xl;
+    @apply overflow-hidden;
+    @apply border;
+
+    background: #E4D6A9;
+
+    @apply aspect-square;
+    @apply md:aspect-[4/3];
+
+    @apply cursor-zoom-in;
+  }
+
+
+  .image-carousel-main:hover
+  > div:last-child {
+    opacity: 1;
+  }
+
+
+  .image-carousel-thumbnail {
+    @apply relative;
+    @apply flex-shrink-0;
+
+    @apply w-16 h-16;
+    @apply sm:w-20 sm:h-20;
+    @apply aspect-square;
+
+    @apply rounded-lg;
+    @apply overflow-hidden;
+    @apply border-2;
+
+    @apply cursor-pointer;
+    @apply transition-all duration-200;
+  }
+
+
+  .image-carousel-thumbnail.active {
+    border-color: #622B14;
+
+    @apply ring-2;
+
+    --tw-ring-color:
+      rgba(98, 43, 20, 0.20);
+
+    @apply ring-offset-1;
+  }
+
+
+  .image-carousel-thumbnail:not(.active) {
+    border-color: transparent;
+
+    @apply opacity-70;
+  }
+
+
+  .image-carousel-thumbnail:not(.active):hover {
+    border-color: #995F2F;
+
+    @apply opacity-100;
+  }
+
+
+  /* =========================================================
+     ADMIN PANEL
+     ========================================================= */
+
+  .admin-card {
+    @apply bg-card;
+    @apply text-card-foreground;
+    @apply rounded-2xl;
+    @apply border;
+    @apply overflow-hidden;
+    @apply shadow-sm;
+  }
+
+
+  .admin-header {
+    @apply px-4 py-4 sm:px-6;
+    @apply border-b;
+
+    background:
+      rgba(228, 214, 169, 0.25);
+
+    @apply flex items-center justify-between;
+    @apply gap-3;
+  }
+
+
+  .admin-content {
+    @apply p-4 sm:p-6;
+  }
+
+
+  .admin-page-title {
+    @apply text-2xl sm:text-3xl;
+    @apply font-bold tracking-tight;
+
+    color: #622B14;
+
+    @apply mb-6 sm:mb-8;
+  }
+
+
+  .admin-table-container {
+    @apply rounded-xl;
+    @apply border;
+    @apply bg-card;
+    @apply overflow-x-auto;
+    @apply shadow-sm;
+  }
+
+
+  .admin-table-container table {
+    @apply w-full;
+
+    min-width: 650px;
+  }
+
+
+  /* =========================================================
+     TABLE
+     ========================================================= */
+
+  .brand-table-header {
+    background: #622B14;
+    color: #E4D6A9;
+  }
+
+
+  .brand-table-row {
+    @apply transition-colors duration-200;
+  }
+
+
+  .brand-table-row:hover {
+    background:
+      rgba(228, 214, 169, 0.30);
+  }
+
+
+  /* =========================================================
+     FILTERS
+     ========================================================= */
+
+  .filter-button {
+    @apply inline-flex;
+    @apply items-center;
+    @apply justify-center;
+    @apply gap-2;
+    @apply px-4;
+    @apply min-h-10;
+    @apply rounded-lg;
+
+    border: 1px solid #978F66;
+
+    color: #622B14;
+    background: transparent;
+
+    @apply text-sm;
+    @apply font-medium;
+    @apply transition-all duration-200;
+  }
+
+
+  .filter-button:hover {
+    background: #E4D6A9;
+    border-color: #622B14;
+  }
+
+
+  .filter-button.active {
+    background: #622B14;
+    color: #E4D6A9;
+    border-color: #622B14;
+  }
+
+
+  /* =========================================================
+     SEARCH
+     ========================================================= */
+
+  .brand-search {
+    @apply w-full;
+    @apply min-h-11;
+    @apply rounded-xl;
+    @apply border;
+    @apply px-4;
+
+    background: #FFFFFF;
+    border-color: #E4D6A9;
+    color: #622B14;
+
+    @apply transition-all duration-200;
+  }
+
+
+  .brand-search:focus {
+    border-color: #622B14;
+
+    box-shadow:
+      0 0 0 3px
+      rgba(98, 43, 20, 0.10);
+  }
+
+
+  /* =========================================================
+     CART
+     ========================================================= */
+
+  .cart-badge {
+    @apply absolute;
+    @apply flex items-center justify-center;
+
+    width: 20px;
+    height: 20px;
+
+    top: -7px;
+    right: -7px;
+
+    border-radius: 999px;
+
+    background: #995F2F;
+    color: #FFFFFF;
+
+    @apply text-[10px];
+    @apply font-bold;
+  }
+
+
+  /* =========================================================
+     PRICE
+     ========================================================= */
+
+  .price {
+    color: #995F2F;
+
+    @apply font-bold;
+  }
+
+
+  .old-price {
+    color: #978F66;
+
+    @apply line-through;
+    @apply text-sm;
+  }
+
+
+  .discount-price {
+    color: #622B14;
+
+    @apply font-extrabold;
+  }
+
+
+  /* =========================================================
+     TRUST / FEATURE CARDS
+     ========================================================= */
+
+  .feature-card {
+    @apply rounded-2xl;
+    @apply p-5 sm:p-6;
+
+    background: #FFFFFF;
+
+    border: 1px solid #E4D6A9;
+
+    @apply transition-all duration-300;
+  }
+
+
+  .feature-card:hover {
+    @apply -translate-y-1;
+
+    box-shadow:
+      0 12px 28px
+      rgba(98, 43, 20, 0.10);
+  }
+
+
+  .feature-icon {
+    @apply flex items-center justify-center;
+
+    width: 48px;
+    height: 48px;
+
+    border-radius: 14px;
+
+    background: #E4D6A9;
+    color: #622B14;
+  }
+
+
+  /* =========================================================
+     FOOTER
+     ========================================================= */
+
+  .brand-footer {
+    background: #622B14;
+    color: #E4D6A9;
+  }
+
+
+  .brand-footer a {
+    transition: color 200ms ease;
+  }
+
+
+  .brand-footer a:hover {
+    color: #C69A45;
+  }
+
+
+  .footer-heading {
+    color: #E4D6A9;
+
+    @apply font-bold;
+  }
+
+
+  .footer-text {
+    color:
+      rgba(228, 214, 169, 0.72);
+  }
+
+
+  /* =========================================================
+     DECORATIVE SPICE ELEMENT
+     ========================================================= */
+
+  .spice-line {
+    width: 100%;
+    height: 1px;
+
+    background:
+      linear-gradient(
+        90deg,
+        transparent,
+        #C69A45,
+        transparent
+      );
+  }
+
+
+  .spice-dot {
+    width: 7px;
+    height: 7px;
+
+    background: #C69A45;
+
+    border-radius: 50%;
+
+    display: inline-block;
+  }
+
+
+  /* =========================================================
+     SCROLLABLE MOBILE ROW
+     ========================================================= */
+
+  .mobile-scroll-row {
+    @apply flex;
+    @apply gap-4;
+    @apply overflow-x-auto;
+    @apply pb-3;
+
+    scroll-snap-type: x mandatory;
+
+    scrollbar-width: none;
+  }
+
+
+  .mobile-scroll-row::-webkit-scrollbar {
+    display: none;
+  }
+
+
+  .mobile-scroll-row > * {
+    scroll-snap-align: start;
+
+    flex: 0 0 auto;
+  }
+
+
+  /* =========================================================
+     HORIZONTAL CATEGORY CARD
+     ========================================================= */
+
+  .category-card {
+    @apply relative;
+    @apply overflow-hidden;
+    @apply rounded-2xl;
+    @apply transition-all duration-300;
+
+    background: #FFFFFF;
+
+    border: 1px solid #E4D6A9;
+  }
+
+
+  .category-card:hover {
+    @apply -translate-y-1;
+
+    box-shadow:
+      0 12px 25px
+      rgba(98, 43, 20, 0.12);
+  }
+
+
+  /* =========================================================
+     LOADING
+     ========================================================= */
+
+  .brand-loading {
+    width: 38px;
+    height: 38px;
+
+    border-radius: 50%;
+
+    border: 3px solid #E4D6A9;
+
+    border-top-color: #622B14;
+
+    animation:
+      spin 0.8s linear infinite;
+  }
+
+}
+
+
+/* =========================================================
+   4. ANIMATIONS
+   ========================================================= */
+
+/*
+  Kept for any other component that may use it.
+  IMPORTANT:
+  .banner-carousel-track no longer uses this animation.
+*/
+
+@keyframes scroll {
+
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+
+}
+
+
+@keyframes promo-shimmer {
+
+  0% {
+    background-position: 0% center;
+  }
+
+  50% {
+    background-position: 100% center;
+  }
+
+  100% {
+    background-position: 0% center;
+  }
+
+}
+
+
+@keyframes marquee {
+
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+
+}
+
+
+@keyframes spin {
+
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+
+}
+
+
+/* =========================================================
+   5. MOBILE OPTIMIZATION
+   ========================================================= */
+
+@media (max-width: 640px) {
+
+
+  /* -------------------------------------------------------
+     Disable aggressive hover movement
+     ------------------------------------------------------- */
+
+  .hover-lift:hover {
+    transform: none;
+  }
+
+
+  .interactive-card:hover {
+    transform: none;
+  }
+
+
+  .product-card:hover {
+    transform: none;
+  }
+
+
+  .feature-card:hover {
+    transform: none;
+  }
+
+
+  .category-card:hover {
+    transform: none;
+  }
+
+
+  /* -------------------------------------------------------
+     Promo
+     ------------------------------------------------------- */
+
+  .promo-strip-content {
+    animation-duration: 24s;
+  }
+
+
+  /* -------------------------------------------------------
+     Banner
+     
+     Keep 16:5 ratio on mobile as well.
+     No horizontal animation.
+     ------------------------------------------------------- */
+
+  .banner-carousel-container {
+    width: 100%;
+    aspect-ratio: 16 / 5;
+
+    min-height: 180px;
+  }
+
+
+  .banner-carousel-track {
+    width: 100%;
+
+    animation: none;
+
+    transform: translateX(0);
+  }
+
+
+  .banner-carousel-item {
+    width: 100%;
+    height: 100%;
+  }
+
+
+  .banner-carousel-image {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+    object-position: center;
+  }
+
+
+  /* -------------------------------------------------------
+     Better mobile spacing
+     ------------------------------------------------------- */
+
+  .hero-content {
+    @apply py-12;
+  }
+
+
+  /* -------------------------------------------------------
+     Mobile product cards
+     ------------------------------------------------------- */
+
+  .product-card {
+    border-radius: 14px;
+  }
+
+
+  /* -------------------------------------------------------
+     Mobile buttons
+     ------------------------------------------------------- */
+
+  .brand-button,
+  .saffron-button,
+  .outline-button {
+    @apply w-full;
+  }
+
+
+  /* -------------------------------------------------------
+     Mobile heading
+     ------------------------------------------------------- */
+
+  h1 {
+    letter-spacing: -0.02em;
+  }
+
+
+  /* -------------------------------------------------------
+     Mobile table
+     ------------------------------------------------------- */
+
+  .admin-table-container {
+    -webkit-overflow-scrolling: touch;
+  }
+
+}
+
+
+/* =========================================================
+   6. TABLET
+   ========================================================= */
+
+@media (min-width: 641px) and (max-width: 1023px) {
+
+
+  .hero-content {
+    @apply py-20;
+  }
+
+
+  .banner-carousel-container {
+    width: 100%;
+
+    aspect-ratio: 16 / 5;
+
+    min-height: 300px;
+  }
+
+
+  .banner-carousel-track {
+    width: 100%;
+
+    animation: none;
+
+    transform: translateX(0);
+  }
+
+
+  .banner-carousel-item {
+    width: 100%;
+    height: 100%;
+  }
+
+
+  .banner-carousel-image {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+    object-position: center;
+  }
+
+}
+
+
+/* =========================================================
+   7. LARGE SCREENS
+   ========================================================= */
+
+@media (min-width: 1024px) {
+
+
+  .banner-carousel-container {
+    width: 100%;
+
+    aspect-ratio: 16 / 5;
+
+    /*
+      1920 × 600 = 16:5
+
+      The browser calculates the correct height
+      automatically from the viewport width.
+    */
+
+    min-height: 400px;
+  }
+
+
+  .banner-carousel-track {
+    width: 100%;
+
+    animation: none;
+
+    transform: translateX(0);
+  }
+
+
+  .banner-carousel-item {
+    width: 100%;
+    height: 100%;
+  }
+
+
+  .banner-carousel-image {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+    object-position: center center;
+  }
+
+}
+
+
+@media (min-width: 1280px) {
+
+  .hero-content {
+    @apply py-32;
+  }
+
+}
+
+
+/* =========================================================
+   8. REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  html {
+    scroll-behavior: auto;
+  }
+
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+
+    animation-iteration-count: 1 !important;
+
+    transition-duration: 0.01ms !important;
+
+    scroll-behavior: auto !important;
+  }
+
+}
+
+
+/* =========================================================
+   9. SAFE AREA FOR MOBILE DEVICES
+   ========================================================= */
+
+@supports (padding: env(safe-area-inset-bottom)) {
+
+  body {
+    padding-bottom:
+      env(safe-area-inset-bottom);
+  }
+
+}
+
+
+/* =========================================================
+   10. PRINT
+   ========================================================= */
+
+@media print {
+
+  .promo-strip,
+  nav,
+  button {
+    display: none !important;
+  }
+
+
+  body {
+    background: #FFFFFF;
+    color: #000000;
+  }
+
+}

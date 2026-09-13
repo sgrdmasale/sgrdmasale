@@ -7,54 +7,94 @@ export const AdminAuthProvider = ({ children }) => {
   const [adminUser, setAdminUser] = useState(null);
   const [initialLoading, setInitialLoading] = useState(true);
 
-  // Derive admin state from the shared PocketBase auth store and keep it in
-  // sync via onChange. Reading pb.authStore directly in render isn't reactive,
-  // so a login/logout that happens outside this provider (or the initial
-  // restore from localStorage) could leave the UI showing the wrong state.
   useEffect(() => {
-    const sync = () => {
-      const record = pb.authStore.record || pb.authStore.model;
-      if (pb.authStore.isValid && record?.collectionName === 'admin') {
+    const sync = (token = pb.authStore.token, record = pb.authStore.record) => {
+      if (token && record?.collectionName === 'admin') {
         setAdminUser(record);
+        console.log('[AuthContext] Restored admin session for:', record.email);
       } else {
         setAdminUser(null);
       }
     };
+
+    // Restore MongoDB/JWT session from localStorage.
     sync();
+
     setInitialLoading(false);
-    const unsubscribe = pb.authStore.onChange(sync);
+
+    // Keep React state synchronized with the MongoDB auth store.
+    const unsubscribe = pb.authStore.onChange((token, record) => {
+      sync(token, record);
+    });
+
     return () => unsubscribe();
   }, []);
 
   const loginAdmin = async (email, password) => {
     try {
-      // Trim the identity so a stray leading/trailing space from copy-paste
-      // can't turn valid credentials into a "Failed to authenticate" error.
-      // Password is left untouched — spaces can be legitimate there.
-      const authData = await pb.collection('admin').authWithPassword(email.trim(), password, { $autoCancel: false });
+      const authData = await pb
+        .collection('admin')
+        .authWithPassword(
+          email.trim(),
+          password,
+          { $autoCancel: false }
+        );
+
+      if (
+        !authData?.record ||
+        authData.record.collectionName !== 'admin'
+      ) {
+        pb.authStore.clear();
+
+        return {
+          success: false,
+          error: 'Authenticated account is not an admin account.'
+        };
+      }
+
       setAdminUser(authData.record);
-      return { success: true, user: authData.record };
+
+      console.log(
+        '[AuthContext] Admin login successful:',
+        authData.record.email
+      );
+
+      return {
+        success: true,
+        user: authData.record
+      };
     } catch (error) {
-      console.error('Admin login error:', error);
-      return { success: false, error: error?.message || 'Login failed' };
+      console.error('[AuthContext] Admin login error:', error);
+
+      return {
+        success: false,
+        error: error?.message || 'Login failed'
+      };
     }
   };
 
   const logoutAdmin = () => {
     pb.authStore.clear();
     setAdminUser(null);
+
+    console.log('[AuthContext] Admin logged out');
   };
 
-  const isAdminAuthenticated = !!adminUser;
+  const isAdminAuthenticated =
+    Boolean(adminUser) &&
+    adminUser?.collectionName === 'admin' &&
+    pb.authStore.isValid;
 
   return (
-    <AdminAuthContext.Provider value={{ 
-      adminUser, 
-      loginAdmin, 
-      logoutAdmin, 
-      isAdminAuthenticated,
-      initialLoading 
-    }}>
+    <AdminAuthContext.Provider
+      value={{
+        adminUser,
+        loginAdmin,
+        logoutAdmin,
+        isAdminAuthenticated,
+        initialLoading
+      }}
+    >
       {children}
     </AdminAuthContext.Provider>
   );
@@ -62,8 +102,12 @@ export const AdminAuthProvider = ({ children }) => {
 
 export const useAdminAuth = () => {
   const context = useContext(AdminAuthContext);
+
   if (!context) {
-    throw new Error('useAdminAuth must be used within AdminAuthProvider');
+    throw new Error(
+      'useAdminAuth must be used within AdminAuthProvider'
+    );
   }
+
   return context;
 };
