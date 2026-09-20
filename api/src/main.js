@@ -7,7 +7,7 @@ import morgan from 'morgan';
 
 import routes from './routes/index.js';
 import { errorMiddleware } from './middleware/error.js';
-import { globalRateLimit } from './middleware/global-rate-limit.js';
+import { globalRateLimit, authRateLimit, publicWriteLimit } from './middleware/global-rate-limit.js';
 import logger from './utils/logger.js';
 import { BodyLimit } from './constants/common.js';
 import { closeMongo, getDb } from './utils/mongoClient.js';
