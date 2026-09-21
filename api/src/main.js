@@ -47,7 +47,7 @@ app.use(cors({
 	credentials: true,
 }));
 app.use(morgan('combined'));
-app.use(globalRateLimit);
+// app.use(globalRateLimit);
 app.use(express.json({
 	limit: BodyLimit,
 }));
