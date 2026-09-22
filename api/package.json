@@ -24,6 +24,7 @@
     "mongoose": "^9.9.5",
     "morgan": "^1.10.0",
     "multer": "^2.3.0",
+    "sharp": "^0.32.0",
     "pdfkit": "^0.13.0",
     "razorpay": "^2.9.2",
     "stripe": "^17.5.0",
