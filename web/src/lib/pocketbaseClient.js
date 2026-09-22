@@ -1,4 +1,4 @@
-const API_URL = '/hcgi/api/db';
+const API_URL = import.meta.env.API_URL || '/hcgi/api/db';
 const STORAGE_KEY = 'sgrd-mongo-auth';
 
 class AuthStore {
