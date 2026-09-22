@@ -2,6 +2,8 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import multer from 'multer';
 import path from 'path';
+import sharp from 'sharp';
+import { unlink } from 'fs/promises';
 import { getDb } from '../utils/mongoClient.js';
 import { getModel, validCollection } from '../models/index.js';
 import { publicRecord, recordId, timestamps } from '../utils/records.js';
@@ -10,6 +12,13 @@ import { issueToken, optionalAuth, requireRole } from '../middleware/mongo-auth.
 
 const router = express.Router();
 const upload = multer({ dest: path.resolve('uploads'), limits: { fileSize: 8 * 1024 * 1024 } });
+async function convertToWebp(filePath) {
+  const webpPath = filePath.replace(/\.(jpe?g|png|gif|webp)$/i, '.webp');
+  await sharp(filePath).webp().toFile(webpPath);
+  await unlink(filePath);
+  return path.basename(webpPath);
+}
+
 const authCollections = new Set(['users', 'admin']);
 const adminOnly = new Set(['admin_settings', 'banners', 'categories', 'coupons', 'offers', 'products', 'shipping_rates', 'shipping_channels', 'payment_gateways', 'taxes', 'company_settings', 'email_templates', 'bulk_coupon_uploads', 'user_limits']);
 const publicCollections = new Set(['products', 'categories', 'banners', 'offers', 'shipping_rates', 'shipping_channels', 'taxes', 'company_settings', 'policies']);
@@ -31,15 +40,31 @@ function canRead(collection, auth, record) {
   return false;
 }
 
-function uploadedFields(req) {
+async function uploadedFields(req) {
   const body = { ...req.body };
-  for (const file of req.files || []) {
-    const list = body[file.fieldname] ? (Array.isArray(body[file.fieldname]) ? body[file.fieldname] : [body[file.fieldname]]) : [];
-    list.push(file.filename);
-    body[file.fieldname] = file.fieldname === 'photos' || file.fieldname === 'images' ? list : file.filename;
+  if (req.files) {
+    for (const file of req.files) {
+      let filename = file.filename;
+      // Check if it's an image by mimetype
+      if (file.mimetype && file.mimetype.startsWith('image/')) {
+        try {
+          filename = await convertToWebp(path.resolve('uploads', file.filename));
+        } catch (err) {
+          console.error(`Failed to convert ${file.filename} to WebP:`, err);
+          // If conversion fails, we keep the original file
+          filename = file.filename;
+        }
+      }
+      // Now update the body as before
+      const list = body[file.fieldname] ? (Array.isArray(body[file.fieldname]) ? body[file.fieldname] : [body[file.fieldname]]) : [];
+      list.push(filename);
+      body[file.fieldname] = file.fieldname === 'photos' || file.fieldname === 'images' ? list : filename;
+    }
   }
   for (const [key, value] of Object.entries(body)) {
-    if (typeof value === 'string' && (value.startsWith('{') || value.startsWith('['))) { try { body[key] = JSON.parse(value); } catch { /* preserve normal strings */ } }
+    if (typeof value === 'string' && (value.startsWith('{') || value.startsWith('['))) {
+      try { body[key] = JSON.parse(value); } catch { /* preserve normal strings */ }
+    }
   }
   return body;
 }
@@ -58,7 +83,7 @@ router.post('/collections/:collection', optionalAuth, upload.any(), async (req, 
   const { collection } = req.params;
   const Model = modelFor(collection, res); if (!Model) return;
   if (!canWrite(collection, req.auth)) return res.status(403).json({ error: 'You are not authorized to create this record' });
-  const data = uploadedFields(req);
+  const data = await uploadedFields(req);
   if (authCollections.has(collection)) {
     if (!data.password) return res.status(400).json({ error: 'A password is required' });
     data.passwordHash = await bcrypt.hash(data.password, 12);
@@ -93,7 +118,7 @@ router.patch('/collections/:collection/:id', optionalAuth, upload.any(), async (
   const Model = modelFor(req.params.collection, res); if (!Model) return; await getDb(); const existing = await Model.findOne({ id: req.params.id }).lean();
   if (!existing) return res.status(404).json({ error: 'Record not found' });
   if (!canWrite(req.params.collection, req.auth, existing)) return res.status(403).json({ error: 'You are not authorized to update this record' });
-  const changes = uploadedFields(req); delete changes.id; delete changes.created; delete changes.collectionName;
+  const changes = await uploadedFields(req); delete changes.id; delete changes.created; delete changes.collectionName;
   if (changes.password) { changes.passwordHash = await bcrypt.hash(changes.password, 12); delete changes.password; delete changes.passwordConfirm; }
   const updated = await Model.findOneAndUpdate({ id: req.params.id }, { $set: changes }, { returnDocument: 'after', runValidators: true }).lean(); res.json(publicRecord(updated));
 });

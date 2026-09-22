@@ -131,7 +131,7 @@ const HomePage = () => {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[400px]">
-          <ProductsList selectedCategory={selectedCategory} />
+          <ProductsList selectedCategory={selectedCategory} limit={8} />
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 text-center">
