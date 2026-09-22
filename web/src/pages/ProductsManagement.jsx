@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Helmet } from 'react-helmet';
 import pb from '@/lib/pocketbaseClient.js';
 import { Button } from '@/components/ui/button';
@@ -140,9 +140,9 @@ const ProductsManagement = () => {
     setIsModalOpen(true);
   };
 
-  const handleImagesChange = (data) => {
+  const handleImagesChange = useCallback((data) => {
     setImageData(data);
-  };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -8,6 +8,7 @@ import ProductsList from '@/components/ProductsList.jsx';
 import ReviewCard from '@/components/ReviewCard.jsx';
 import BannerCarousel from '@/components/BannerCarousel.jsx';
 import ErrorBoundary from '@/components/ErrorBoundary.jsx';
+import OfferStrip from '@/components/OfferStrip.jsx';
 import pb from '@/lib/pocketbaseClient.js';
 const dummyReviews = [];
 const HomePage = () => {
@@ -34,6 +35,9 @@ const HomePage = () => {
         <title>SGRD - Premium Indian Spices | Harjinder Singh and Sons</title>
         <meta name="description" content="Shop authentic Indian spices from Harjinder Singh and Sons. Premium quality saffron, turmeric, cardamom, and more delivered to your doorstep." />
       </Helmet>
+
+      {/* Offer Strip Section */}
+      <OfferStrip />
 
       {/* Banner Carousel Section */}
       <ErrorBoundary>
@@ -131,7 +135,7 @@ const HomePage = () => {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[400px]">
-          <ProductsList selectedCategory={selectedCategory} limit={8} />
+          <ProductsList selectedCategory={selectedCategory} limit={4} />
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 text-center">

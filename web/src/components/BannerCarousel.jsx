@@ -237,6 +237,9 @@ const BannerCarousel = () => {
           // Normal looping
           loop: banners.length > 1,
 
+          // Enable autoplay
+          autoplay: true,
+
           // One snap point per banner
           skipSnaps: false,
         }}

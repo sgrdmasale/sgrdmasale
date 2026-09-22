@@ -45,8 +45,10 @@ import ShippingChannelsManagement from './pages/ShippingChannelsManagement.jsx';
 import PaymentGatewaysManagement from './pages/PaymentGatewaysManagement.jsx';
 import CollectionsOverview from './pages/CollectionsOverview.jsx';
 import CouponsManagement from './pages/CouponsManagement.jsx';
+import EnquiriesManagement from './pages/EnquiriesManagement.jsx';
 import OffersManagement from './pages/OffersManagement.jsx';
 import ShippingRatesManagement from './pages/ShippingRatesManagement.jsx';
+import PartnershipsManagement from './pages/PartnershipsManagement.jsx';
 
 // Policy Pages
 import ReturnPolicyPage from './pages/ReturnPolicyPage.jsx';
@@ -71,8 +73,8 @@ function AppContent() {
 
   return (
     <>
+      {/* Public Routes */}
       <Routes>
-        {/* Public Routes */}
         <Route path="/" element={<PublicLayout><HomePage /></PublicLayout>} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
@@ -85,7 +87,7 @@ function AppContent() {
         <Route path="/success" element={<PublicLayout><SuccessPage /></PublicLayout>} />
         <Route path="/order-confirmation/:orderId" element={<PublicLayout><OrderConfirmationPage /></PublicLayout>} />
         <Route path="/payment-confirmation/:orderId" element={<PublicLayout><PaymentConfirmationPage /></PublicLayout>} />
-        
+
         {/* Policy Routes (Public) */}
         <Route path="/return-policy" element={<ReturnPolicyPage />} />
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
@@ -104,6 +106,8 @@ function AppContent() {
           <Route path="orders" element={<OrdersManagement />} />
           <Route path="customers" element={<CustomersPage />} />
           <Route path="coupons" element={<CouponsManagement />} />
+          <Route path="enquiries" element={<EnquiriesManagement />} />
+          <Route path="partnerships" element={<PartnershipsManagement />} />
           <Route path="offers" element={<OffersManagement />} />
           <Route path="shipping-rates" element={<ShippingRatesManagement />} />
           <Route path="shipping-channels" element={<ShippingChannelsManagement />} />
@@ -147,14 +151,14 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
-        
+
         {/* Catch-all 404 */}
         <Route path="*" element={<PublicLayout><div className="min-h-[70vh] flex items-center justify-center"><div className="text-center"><h1 className="text-4xl font-bold mb-4">404</h1><p className="text-muted-foreground">Page not found</p></div></div></PublicLayout>} />
       </Routes>
-      
+
       {/* Shopping Cart Sidebar */}
       <ShoppingCartSidebar isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} />
-      
+
       <Toaster position="bottom-right" richColors />
     </>
   );
@@ -162,7 +166,7 @@ function AppContent() {
 
 function App() {
   console.log('[App] Initializing SGRD Masale application...');
-  
+
   return (
     <CartProvider>
       <AuthProvider>

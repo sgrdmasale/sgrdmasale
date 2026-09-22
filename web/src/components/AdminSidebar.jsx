@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAdminAuth } from '@/contexts/AdminAuthContext.jsx';
-import { 
+import {
   LayoutDashboard, Package, Tags, Receipt, ShoppingCart, Users,
   Building2, Settings, LogOut, Menu, Database, Image as ImageIcon,
-  Truck, Navigation, CreditCard, Mail, ChevronDown, ChevronRight
+  Truck, Navigation, CreditCard, Mail, MessageSquare, ChevronDown, ChevronRight, Handshake
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
@@ -30,6 +30,8 @@ const menuGroups = [
     items: [
       { name: 'Orders', path: '/admin/orders', icon: ShoppingCart },
       { name: 'Customers', path: '/admin/customers', icon: Users },
+      { name: 'Enquiries', path: '/admin/enquiries', icon: MessageSquare },
+      { name: 'Partnerships', path: '/admin/partnerships', icon: Handshake },
     ]
   },
   {
@@ -53,7 +55,7 @@ const SidebarContent = ({ adminUser, handleLogout }) => {
   );
 
   const toggleGroup = (title) => {
-    setExpandedGroups(prev => 
+    setExpandedGroups(prev =>
       prev.includes(title) ? prev.filter(t => t !== title) : [...prev, title]
     );
   };
@@ -63,7 +65,7 @@ const SidebarContent = ({ adminUser, handleLogout }) => {
       <div className="p-6 border-b border-border/50 bg-muted/20">
         <h2 className="text-lg font-semibold tracking-tight text-primary">SGRD Admin</h2>
       </div>
-      
+
       <nav className="flex-1 p-4 space-y-4 overflow-y-auto custom-scrollbar">
         {menuGroups.map((group) => (
           <div key={group.title} className="space-y-1">
@@ -78,12 +80,12 @@ const SidebarContent = ({ adminUser, handleLogout }) => {
                 <ChevronRight className="w-4 h-4" />
               )}
             </button>
-            
+
             {expandedGroups.includes(group.title) && (
               <div className="space-y-1 pt-1">
                 {group.items.map((item) => {
-                  const isActive = item.exact 
-                    ? location.pathname === item.path 
+                  const isActive = item.exact
+                    ? location.pathname === item.path
                     : location.pathname.startsWith(item.path);
 
                   return (
@@ -92,8 +94,8 @@ const SidebarContent = ({ adminUser, handleLogout }) => {
                       to={item.path}
                       end={item.exact}
                       className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm ${
-                        isActive 
-                          ? 'bg-primary/10 text-primary font-medium' 
+                        isActive
+                          ? 'bg-primary/10 text-primary font-medium'
                           : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                       }`}
                     >
@@ -113,8 +115,8 @@ const SidebarContent = ({ adminUser, handleLogout }) => {
           <p className="text-sm font-medium truncate text-foreground">{adminUser?.email}</p>
           <p className="text-xs text-muted-foreground">Administrator</p>
         </div>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20 rounded-lg transition-colors text-sm"
           onClick={handleLogout}
         >
