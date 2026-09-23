@@ -14,6 +14,8 @@ const BannerCarousel = () => {
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [carouselApi, setCarouselApi] = useState(null);
+  const [isAutoScrollPaused, setIsAutoScrollPaused] = useState(false);
 
   const navigate = useNavigate();
 
@@ -154,6 +156,20 @@ const BannerCarousel = () => {
     fetchBanners();
   }, []);
 
+  useEffect(() => {
+    if (!carouselApi || banners.length <= 1 || isAutoScrollPaused) {
+      return undefined;
+    }
+
+    const autoScrollInterval = window.setInterval(() => {
+      if (!document.hidden) {
+        carouselApi.scrollNext();
+      }
+    }, 5000);
+
+    return () => window.clearInterval(autoScrollInterval);
+  }, [carouselApi, banners.length, isAutoScrollPaused]);
+
   // ---------------------------------------------------------
   // BANNER CLICK
   // ---------------------------------------------------------
@@ -222,8 +238,17 @@ const BannerCarousel = () => {
         border-b
         border-border/50
       "
+      onMouseEnter={() => setIsAutoScrollPaused(true)}
+      onMouseLeave={() => setIsAutoScrollPaused(false)}
+      onFocusCapture={() => setIsAutoScrollPaused(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          setIsAutoScrollPaused(false);
+        }
+      }}
     >
       <Carousel
+        setApi={setCarouselApi}
         opts={{
           align: 'start',
 
@@ -236,9 +261,6 @@ const BannerCarousel = () => {
 
           // Normal looping
           loop: banners.length > 1,
-
-          // Enable autoplay
-          autoplay: true,
 
           // One snap point per banner
           skipSnaps: false,

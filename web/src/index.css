@@ -588,6 +588,77 @@
 
 
   /* =========================================================
+     HOME OFFER MARQUEE
+     ========================================================= */
+
+  .offer-marquee {
+    @apply relative w-full overflow-hidden border-b;
+
+    background: #622B14;
+    border-color: rgba(214, 170, 85, 0.45);
+    box-shadow: 0 5px 18px rgba(59, 33, 22, 0.14);
+  }
+
+
+  .offer-marquee::before,
+  .offer-marquee::after {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    z-index: 2;
+    width: clamp(1.5rem, 6vw, 6rem);
+    pointer-events: none;
+  }
+
+
+  .offer-marquee::before {
+    left: 0;
+    background: linear-gradient(90deg, #622B14, transparent);
+  }
+
+
+  .offer-marquee::after {
+    right: 0;
+    background: linear-gradient(270deg, #622B14, transparent);
+  }
+
+
+  .offer-marquee-track {
+    display: flex;
+    width: max-content;
+    animation: offer-marquee-scroll 28s linear infinite;
+    will-change: transform;
+  }
+
+
+  .offer-marquee:hover .offer-marquee-track,
+  .offer-marquee:focus-within .offer-marquee-track {
+    animation-play-state: paused;
+  }
+
+
+  .offer-marquee-group {
+    @apply flex shrink-0 items-center py-2.5;
+    gap: 1.5rem;
+    padding-inline: 0.75rem;
+  }
+
+
+  .offer-marquee-item {
+    @apply flex shrink-0 items-center rounded-full text-xs sm:text-sm;
+    gap: 0.65rem;
+  }
+
+
+  .offer-marquee-badge {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.68rem] font-extrabold uppercase tracking-wider;
+
+    color: #3B2116;
+    background: #f4d789;
+  }
+
+
+  /* =========================================================
      BUTTONS
      ========================================================= */
 
@@ -1549,6 +1620,19 @@
   }
 
   100% {
+    transform: translateX(-50%);
+  }
+
+}
+
+
+@keyframes offer-marquee-scroll {
+
+  from {
+    transform: translateX(0);
+  }
+
+  to {
     transform: translateX(-50%);
   }
 

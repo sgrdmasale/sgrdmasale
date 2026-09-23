@@ -43,8 +43,11 @@ export default function PromotionalStripe({ onStateChange }) {
       }
       
       if (isMounted) {
-        setOffers(data || []);
-        if (onStateChange) onStateChange((data || []).length > 0);
+        const displayableOffers = (data || []).filter(
+          (offer) => offer.title || offer.description
+        );
+        setOffers(displayableOffers);
+        if (onStateChange) onStateChange(displayableOffers.length > 0);
         setIsLoading(false);
       }
     };
