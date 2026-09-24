@@ -1110,9 +1110,8 @@
   }
 
 
-  .image-grid-item:hover
-  .image-grid-item-overlay {
-    opacity: 1;
+  .image-grid-entry {
+    @apply min-w-0 space-y-2;
   }
 
 
@@ -1122,20 +1121,6 @@
     --tw-ring-color: #622B14;
     --tw-ring-offset-color: #E4D6A9;
   }
-
-
-  .image-grid-item-overlay {
-    @apply absolute inset-0;
-
-    @apply opacity-100;
-    @apply transition-opacity duration-200;
-
-    @apply flex flex-col;
-    @apply justify-between;
-
-    @apply p-2;
-  }
-
 
   /* =========================================================
      IMAGE CAROUSEL

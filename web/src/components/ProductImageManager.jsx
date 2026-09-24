@@ -196,49 +196,47 @@ const ProductImageManager = ({
       </div>
 
       {orderedImages.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-6">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(128px,1fr))] gap-4 mt-6">
           {orderedImages.map((image, index) => (
-            <div 
+            <div
               key={image.id} 
-              className={`image-grid-item ${index === primaryIndex ? 'primary' : ''}`}
+              className="image-grid-entry"
             >
-              <img 
-                src={image.url} 
-                alt={`Product image ${index + 1}`} 
-                className="w-full h-full object-cover"
-              />
-              
-              {index === primaryIndex && (
-                <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1">
-                  <Star className="w-3 h-3 fill-current" /> Primary
-                </div>
-              )}
-              
-              <div className="image-grid-item-overlay">
-                <div className="flex justify-end">
+              <div className={`image-grid-item ${index === primaryIndex ? 'primary' : ''}`}>
+                <img 
+                  src={image.url} 
+                  alt={`Product image ${index + 1}`} 
+                  className="w-full h-full object-cover"
+                />
+
+                {index === primaryIndex && (
+                  <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-[11px] font-bold px-2 py-1 rounded-md shadow-sm flex items-center gap-1">
+                    <Star className="w-3 h-3 fill-current" /> Primary
+                  </div>
+                )}
+
+                <div className="absolute top-2 right-2">
                   <Button 
                     variant="destructive" 
                     size="icon" 
-                    className="h-7 w-7 rounded-full opacity-90 hover:opacity-100"
+                    className="h-8 w-8 rounded-full shadow-sm opacity-90 hover:opacity-100"
+                    aria-label={`Remove product image ${index + 1}`}
                     onClick={(e) => { e.stopPropagation(); removeImage(index); }}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </div>
-                
-                <div className="flex justify-center bg-background/90 backdrop-blur-sm p-1.5 rounded-lg">
-                  {index !== primaryIndex && (
-                    <Button 
-                      variant="secondary" 
-                      size="sm" 
-                      className="h-7 px-3 text-xs font-semibold rounded-md"
-                      onClick={(e) => { e.stopPropagation(); setAsPrimary(index); }}
-                    >
-                      <Star className="w-3.5 h-3.5 mr-1.5" /> Set as primary
-                    </Button>
-                  )}
-                </div>
               </div>
+              {index !== primaryIndex && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-full px-2 text-xs font-semibold"
+                  onClick={() => setAsPrimary(index)}
+                >
+                  <Star className="mr-1.5 h-3.5 w-3.5" /> Make primary
+                </Button>
+              )}
             </div>
           ))}
         </div>

@@ -51,10 +51,10 @@ const OfferItem = ({ offer }) => {
   );
 };
 
-const OfferGroup = ({ offers, duplicate = false }) => (
+const OfferGroup = ({ offers, duplicate = false, keyPrefix }) => (
   <div className="offer-marquee-group" aria-hidden={duplicate || undefined}>
-    {offers.map((offer) => (
-      <React.Fragment key={`${duplicate ? 'duplicate-' : ''}${offer.id}`}>
+    {offers.map((offer, index) => (
+      <React.Fragment key={`${keyPrefix}-${offer.id}-${index}`}>
         <OfferItem offer={offer} />
         <Sparkles aria-hidden="true" className="h-4 w-4 shrink-0 text-[#d6aa55]" />
       </React.Fragment>
@@ -106,11 +106,16 @@ const OfferStrip = () => {
 
   if (offers.length === 0) return null;
 
+  // A short cycle leaves the strip visually empty when there are only one or
+  // two active offers. Fill each cycle with the same offers before duplicating
+  // it, so the animation is continuous at every viewport width.
+  const cycleOffers = Array.from({ length: 8 }, () => offers).flat();
+
   return (
     <aside className="offer-marquee" aria-label="Current offers">
       <div className="offer-marquee-track">
-        <OfferGroup offers={offers} />
-        <OfferGroup offers={offers} duplicate />
+        <OfferGroup offers={cycleOffers} keyPrefix="cycle-a" />
+        <OfferGroup offers={cycleOffers} duplicate keyPrefix="cycle-b" />
       </div>
     </aside>
   );
