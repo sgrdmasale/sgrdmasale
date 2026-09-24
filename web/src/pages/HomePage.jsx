@@ -104,7 +104,7 @@ const HomePage = () => {
             once: true
           }}>
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 text-balance">
-                Featured Products
+                Shop By Category
               </h2>
               <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
                 Discover our most popular premium spices, loved by home cooks and professional chefs alike.

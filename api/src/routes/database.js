@@ -12,9 +12,27 @@ import { issueToken, optionalAuth, requireRole } from '../middleware/mongo-auth.
 
 const router = express.Router();
 const upload = multer({ dest: path.resolve('uploads'), limits: { fileSize: 8 * 1024 * 1024 } });
+
+const IMAGE_VARIANTS = [100, 500, 800];
+
 async function convertToWebp(filePath) {
-  const webpPath = filePath.replace(/\.(jpe?g|png|gif|webp)$/i, '.webp');
-  await sharp(filePath).webp().toFile(webpPath);
+  // Multer's temporary filenames intentionally have no extension. Appending,
+  // rather than replacing, ensures Sharp never attempts to overwrite its input.
+  const webpPath = `${filePath}.webp`;
+  const image = sharp(filePath, { animated: false }).rotate();
+
+  await image
+    .clone()
+    .resize({ width: 1600, height: 1600, fit: 'inside', withoutEnlargement: true })
+    .webp({ quality: 82 })
+    .toFile(webpPath);
+
+  await Promise.all(IMAGE_VARIANTS.map((width) => image
+    .clone()
+    .resize({ width, height: width, fit: 'inside', withoutEnlargement: true })
+    .webp({ quality: width <= 100 ? 72 : 80 })
+    .toFile(webpPath.replace(/\.webp$/, `.w${width}.webp`))));
+
   await unlink(filePath);
   return path.basename(webpPath);
 }

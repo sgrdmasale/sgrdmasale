@@ -30,7 +30,7 @@ const PhotoGallery = ({ product }) => {
     setTransformOrigin(`${x}% ${y}%`);
   };
 
-  const activePhotoUrl = pb.files.getUrl(product, allPhotos[activeIndex]);
+  const activePhotoUrl = pb.files.getUrl(product, allPhotos[activeIndex], { thumb: '800x800' });
 
   return (
     <div className="flex flex-col space-y-4">
@@ -39,6 +39,9 @@ const PhotoGallery = ({ product }) => {
         <img
           src={activePhotoUrl}
           alt={`${product?.name} view ${activeIndex + 1}`}
+          width="800"
+          height="800"
+          decoding="async"
           className="gallery-zoom-image"
           style={{ transformOrigin }}
           onMouseMove={handleMouseMove}
@@ -62,6 +65,10 @@ const PhotoGallery = ({ product }) => {
               <img
                 src={pb.files.getUrl(product, photo, { thumb: '100x100' })}
                 alt={`Thumbnail ${index + 1}`}
+                width="100"
+                height="100"
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover"
               />
             </button>

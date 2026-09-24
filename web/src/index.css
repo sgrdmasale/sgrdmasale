@@ -641,6 +641,7 @@
     @apply flex shrink-0 items-center py-2.5;
     gap: 1.5rem;
     padding-inline: 0.75rem;
+    min-width: 100vw;
   }
 
 
@@ -1124,10 +1125,7 @@
   .image-grid-item-overlay {
     @apply absolute inset-0;
 
-    background:
-      rgba(59, 33, 22, 0.60);
-
-    @apply opacity-0;
+    @apply opacity-100;
     @apply transition-opacity duration-200;
 
     @apply flex flex-col;
@@ -1706,9 +1704,9 @@
 
   .banner-carousel-container {
     width: 100%;
-    aspect-ratio: 16 / 5;
-
-    min-height: 180px;
+    height: auto;
+    aspect-ratio: auto;
+    min-height: 0;
   }
 
 
@@ -1723,15 +1721,15 @@
 
   .banner-carousel-item {
     width: 100%;
-    height: 100%;
+    height: auto;
   }
 
 
   .banner-carousel-image {
+    display: block;
     width: 100%;
-    height: 100%;
-
-    object-fit: cover;
+    height: auto;
+    object-fit: contain;
     object-position: center;
   }
 

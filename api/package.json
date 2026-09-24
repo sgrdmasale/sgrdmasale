@@ -8,6 +8,7 @@
     "start": "node --env-file=.env src/main.js",
     "lint": "eslint . --quiet",
     "migrate:pocketbase": "node scripts/migrate-pocketbase-to-mongo.js",
+    "migrate:images": "node --env-file=.env scripts/migrate-image-uploads.js",
     "test:mongo": "node tests/mongoose-smoke.mjs",
     "test:browser": "node tests/browser-harness.mjs",
     "test:migration": "node tests/migration-smoke.mjs"

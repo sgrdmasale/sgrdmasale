@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { UploadCloud, X, Star, GripVertical, ArrowLeft, ArrowRight, Image as ImageIcon, Trash2 } from 'lucide-react';
+import { UploadCloud, Star, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import pb from '@/lib/pocketbaseClient.js';
 
@@ -33,7 +33,7 @@ const ProductImageManager = ({
         // Map the saved order to the actual image filenames
         initialOrder = existingOrder.map(id => {
           const img = existingImages.find(img => img === id || img.includes(id));
-          return img ? { type: 'server', id: img, url: pb.files.getUrl({ collectionId: 'pbc_9751530902', id: 'dummy' }, img) } : null;
+          return img ? { type: 'server', id: img, url: pb.files.getUrl({ collectionId: 'pbc_9751530902', id: 'dummy' }, img, { thumb: '100x100' }) } : null;
         }).filter(Boolean);
         
         // Add any images that aren't in the order array
@@ -41,14 +41,14 @@ const ProductImageManager = ({
         const missingImages = existingImages.filter(img => !orderedIds.includes(img));
         
         missingImages.forEach(img => {
-          initialOrder.push({ type: 'server', id: img, url: pb.files.getUrl({ collectionId: 'pbc_9751530902', id: 'dummy' }, img) });
+          initialOrder.push({ type: 'server', id: img, url: pb.files.getUrl({ collectionId: 'pbc_9751530902', id: 'dummy' }, img, { thumb: '100x100' }) });
         });
       } else {
         // No order saved, just use the array as is
         initialOrder = existingImages.map(img => ({ 
           type: 'server', 
           id: img, 
-          url: pb.files.getUrl({ collectionId: 'pbc_9751530902', id: 'dummy' }, img) 
+          url: pb.files.getUrl({ collectionId: 'pbc_9751530902', id: 'dummy' }, img, { thumb: '100x100' }) 
         }));
       }
       
@@ -155,28 +155,6 @@ const ProductImageManager = ({
     }
   };
 
-  const moveImage = (index, direction) => {
-    if (
-      (direction === -1 && index === 0) || 
-      (direction === 1 && index === orderedImages.length - 1)
-    ) return;
-
-    const newIndex = index + direction;
-    const newOrderedImages = [...orderedImages];
-    const temp = newOrderedImages[index];
-    newOrderedImages[index] = newOrderedImages[newIndex];
-    newOrderedImages[newIndex] = temp;
-    
-    setOrderedImages(newOrderedImages);
-    
-    // Adjust primary index
-    if (primaryIndex === index) {
-      setPrimaryIndex(newIndex);
-    } else if (primaryIndex === newIndex) {
-      setPrimaryIndex(index);
-    }
-  };
-
   const setAsPrimary = (index) => {
     setPrimaryIndex(index);
   };
@@ -248,36 +226,15 @@ const ProductImageManager = ({
                   </Button>
                 </div>
                 
-                <div className="flex items-center justify-between gap-1 bg-background/90 backdrop-blur-sm p-1.5 rounded-lg">
-                  <div className="flex gap-1">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-6 w-6 rounded-md hover:bg-muted"
-                      disabled={index === 0}
-                      onClick={(e) => { e.stopPropagation(); moveImage(index, -1); }}
-                    >
-                      <ArrowLeft className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-6 w-6 rounded-md hover:bg-muted"
-                      disabled={index === orderedImages.length - 1}
-                      onClick={(e) => { e.stopPropagation(); moveImage(index, 1); }}
-                    >
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                  
+                <div className="flex justify-center bg-background/90 backdrop-blur-sm p-1.5 rounded-lg">
                   {index !== primaryIndex && (
                     <Button 
-                      variant="ghost" 
+                      variant="secondary" 
                       size="sm" 
-                      className="h-6 px-2 text-[10px] font-semibold rounded-md hover:bg-primary/10 hover:text-primary"
+                      className="h-7 px-3 text-xs font-semibold rounded-md"
                       onClick={(e) => { e.stopPropagation(); setAsPrimary(index); }}
                     >
-                      Set Primary
+                      <Star className="w-3.5 h-3.5 mr-1.5" /> Set as primary
                     </Button>
                   )}
                 </div>

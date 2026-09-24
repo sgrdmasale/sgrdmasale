@@ -55,9 +55,17 @@ app.use(express.urlencoded({
 	extended: true,
 	limit: BodyLimit,
 }));
-app.use('/uploads', express.static('uploads'));
+const uploadStaticOptions = {
+  maxAge: '1y',
+  immutable: true,
+  setHeaders(res) {
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  },
+};
+
+app.use('/uploads', express.static('uploads', uploadStaticOptions));
 // Same upload path under the frontend API prefix for direct/static deployments.
-app.use('/hcgi/api/uploads', express.static('uploads'));
+app.use('/hcgi/api/uploads', express.static('uploads', uploadStaticOptions));
 
 const applicationRoutes = routes();
 app.use('/', applicationRoutes);

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAdminAuth } from '@/contexts/AdminAuthContext.jsx';
 import {
-  LayoutDashboard, Package, Tags, Receipt, ShoppingCart, Users,
+  LayoutDashboard, Package, Tags, Receipt, ShoppingCart, Users, Percent, Ticket,
   Building2, Settings, LogOut, Menu, Database, Image as ImageIcon,
   Truck, Navigation, CreditCard, Mail, MessageSquare, ChevronDown, ChevronRight, Handshake
 } from 'lucide-react';
@@ -23,6 +23,8 @@ const menuGroups = [
       { name: 'Products', path: '/admin/products', icon: Package },
       { name: 'Categories', path: '/admin/categories', icon: Tags },
       { name: 'Banners', path: '/admin/banners', icon: ImageIcon },
+      { name: 'Offers', path: '/admin/offers', icon: Percent },
+      { name: 'Coupons', path: '/admin/coupons', icon: Ticket },
     ]
   },
   {

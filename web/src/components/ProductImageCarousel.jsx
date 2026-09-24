@@ -53,6 +53,9 @@ const ProductImageCarousel = ({ product }) => {
         <img
           src={currentImage}
           alt=""
+          width="800"
+          height="800"
+          decoding="async"
           className={`w-full h-full object-cover transition-transform duration-300 ${isZoomed ? 'scale-150 cursor-zoom-out' : 'cursor-zoom-in'}`}
           onClick={() => setIsZoomed(!isZoomed)}
         />
@@ -102,6 +105,10 @@ const ProductImageCarousel = ({ product }) => {
                 <img
                   src={thumbUrl}
                   alt=""
+                  width="100"
+                  height="100"
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover"
                 />
               </button>

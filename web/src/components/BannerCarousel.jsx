@@ -286,7 +286,7 @@ const BannerCarousel = () => {
                 className={`
                   relative
                   w-full
-                  h-[210px]
+                  h-auto
                   sm:h-[280px]
                   md:h-[380px]
                   lg:h-[450px]
@@ -341,13 +341,16 @@ const BannerCarousel = () => {
                   className="
                     block
                     w-full
-                    h-full
-                    object-cover
+                    h-auto
+                    sm:h-full
+                    object-contain
+                    sm:object-cover
                     object-center
                     select-none
                     rounded-none
                   "
                   draggable={false}
+                  decoding="async"
                   loading={
                     index === 0
                       ? 'eager'

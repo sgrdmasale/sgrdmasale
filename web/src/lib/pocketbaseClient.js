@@ -44,8 +44,17 @@ function collection(name) {
 }
 
 const files = {
-  getUrl(_record, filename) { return filename?.startsWith('http') ? filename : `${API_URL.replace('/db', '')}/uploads/${filename}`; },
-  getURL(record, filename) { return this.getUrl(record, filename); },
+  getUrl(_record, filename, options = {}) {
+    if (!filename || filename.startsWith('http')) return filename;
+
+    // New uploads generate these WebP derivatives on the API. Legacy files
+    // retain their original URLs until they are migrated, so they never 404.
+    const requestedWidth = Number.parseInt(String(options.thumb || '').split('x')[0], 10);
+    const width = [100, 500, 800].find((candidate) => candidate === requestedWidth);
+    const variant = width && filename.endsWith('.webp') ? filename.replace(/\.webp$/, `.w${width}.webp`) : filename;
+    return `${API_URL.replace('/db', '')}/uploads/${variant}`;
+  },
+  getURL(record, filename, options) { return this.getUrl(record, filename, options); },
 };
 
 const pocketbaseClient = {
