@@ -626,7 +626,7 @@
   .offer-marquee-track {
     display: flex;
     width: max-content;
-    animation: offer-marquee-scroll 28s linear infinite;
+    animation: offer-marquee-scroll 96s linear infinite;
     will-change: transform;
   }
 
