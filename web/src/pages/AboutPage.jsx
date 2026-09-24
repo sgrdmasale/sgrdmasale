@@ -5,7 +5,7 @@ import { Award, Leaf, Users, ShieldCheck, HeartHandshake, History } from 'lucide
 import Header from '@/components/Header.jsx';
 import Footer from '@/components/Footer.jsx';
 const AboutPage = () => {
-  return <div className="min-h-screen bg-background flex flex-col">
+  return <div className="flex min-w-0 min-h-screen flex-col overflow-x-clip bg-background">
       <Helmet>
         <title>About Us | Harjinder Singh and Sons - SGRD</title>
         <meta name="description" content="Learn about Harjinder Singh and Sons (SGRD), established in 2018 in Amritsar. We bring you premium quality spices with a commitment to authenticity and heritage." />

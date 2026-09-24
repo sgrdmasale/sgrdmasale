@@ -641,7 +641,9 @@
     @apply flex shrink-0 items-center py-2.5;
     gap: 1.5rem;
     padding-inline: 0.75rem;
-    min-width: 100vw;
+    /* Each duplicate must begin directly after the last offer. A viewport-wide
+       group left empty space when its contents were narrower than the screen. */
+    width: max-content;
   }
 
 
