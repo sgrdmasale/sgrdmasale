@@ -781,7 +781,11 @@ const CheckoutPage = () => {
                     )}
                     {appliedOffers.map((appliedOffer) => (
                       <div key={appliedOffer.id} className="flex justify-between">
-                        <span className="text-success font-bold">Offer: {appliedOffer.productName}</span>
+                        <span className="text-success font-bold">
+                          Offer: {appliedOffer.productName} ({appliedOffer.offer.discount_type === 'percentage'
+                            ? `${appliedOffer.offer.discount_value}% off`
+                            : `${formatPrice(appliedOffer.offer.discount_value)} off`})
+                        </span>
                         <span className="font-extrabold text-success">-{formatPrice(appliedOffer.discount)}</span>
                       </div>
                     ))}
