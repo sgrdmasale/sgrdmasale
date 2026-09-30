@@ -26,7 +26,7 @@ const OfferItem = ({ offer }) => {
         {formatDiscount(offer)}
       </span>
       <span className="font-semibold text-primary-foreground">
-        {offer.product?.name || 'Selected products'}
+        {offer.product?.name || 'Product offer'}
       </span>
       <span className="text-primary-foreground/65">
         {formatEndDate(offer.end_date)}

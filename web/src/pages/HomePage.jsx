@@ -43,51 +43,7 @@ const HomePage = () => {
       <ErrorBoundary>
         <BannerCarousel />
       </ErrorBoundary>
-
-      {/* Features */}
-      <section className="py-20 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-            {[{
-            icon: Award,
-            title: 'Premium Quality',
-            desc: 'Handpicked spices from trusted sources'
-          }, {
-            icon: Shield,
-            title: 'Pure & Natural',
-            desc: 'No additives or preservatives'
-          }, {
-            icon: Truck,
-            title: 'Fast Delivery',
-            desc: 'Delivered fresh to your doorstep'
-          }, {
-            icon: Star,
-            title: 'Trusted Since 2017',
-            desc: 'Three generations of expertise'
-          }].map((feature, index) => <motion.div key={index} initial={{
-            opacity: 0,
-            y: 20
-          }} whileInView={{
-            opacity: 1,
-            y: 0
-          }} transition={{
-            duration: 0.5,
-            delay: index * 0.1
-          }} viewport={{
-            once: true
-          }} className="h-full">
-                <div className="p-8 text-center rounded-3xl bg-card border border-border/60 hover:border-primary/30 transition-all duration-300 h-full flex flex-col justify-center shadow-sm hover:shadow-md group">
-                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-primary group-hover:scale-110 transition-transform duration-300">
-                    <feature.icon className="w-8 h-8" />
-                  </div>
-                  <h3 className="font-bold text-xl mb-3 text-foreground">{feature.title}</h3>
-                  <p className="text-base text-muted-foreground leading-relaxed font-medium">{feature.desc}</p>
-                </div>
-              </motion.div>)}
-          </div>
-        </div>
-      </section>
-
+      
       {/* Featured Products Section */}
       <section className="py-24 bg-muted/30 overflow-hidden border-y border-border/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
@@ -143,6 +99,51 @@ const HomePage = () => {
             View All Products
             <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Button>
+        </div>
+      </section>
+
+
+      {/* Features */}
+      <section className="py-20 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+            {[{
+            icon: Award,
+            title: 'Premium Quality',
+            desc: 'Handpicked spices from trusted sources'
+          }, {
+            icon: Shield,
+            title: 'Pure & Natural',
+            desc: 'No additives or preservatives'
+          }, {
+            icon: Truck,
+            title: 'Fast Delivery',
+            desc: 'Delivered fresh to your doorstep'
+          }, {
+            icon: Star,
+            title: 'Trusted Since 2017',
+            desc: 'Three generations of expertise'
+          }].map((feature, index) => <motion.div key={index} initial={{
+            opacity: 0,
+            y: 20
+          }} whileInView={{
+            opacity: 1,
+            y: 0
+          }} transition={{
+            duration: 0.5,
+            delay: index * 0.1
+          }} viewport={{
+            once: true
+          }} className="h-full">
+                <div className="p-8 text-center rounded-3xl bg-card border border-border/60 hover:border-primary/30 transition-all duration-300 h-full flex flex-col justify-center shadow-sm hover:shadow-md group">
+                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-primary group-hover:scale-110 transition-transform duration-300">
+                    <feature.icon className="w-8 h-8" />
+                  </div>
+                  <h3 className="font-bold text-xl mb-3 text-foreground">{feature.title}</h3>
+                  <p className="text-base text-muted-foreground leading-relaxed font-medium">{feature.desc}</p>
+                </div>
+              </motion.div>)}
+          </div>
         </div>
       </section>
 

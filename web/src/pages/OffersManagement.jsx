@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import pb from '@/lib/pocketbaseClient.js';
 import { useToast } from '@/hooks/use-toast.js';
-import { Plus, Edit, Trash2, Percent, Loader2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Percent, Loader2, ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -35,6 +35,7 @@ import {
 const OffersManagement = () => {
   const { toast } = useToast();
   const [offers, setOffers] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -76,7 +77,30 @@ const OffersManagement = () => {
 
   useEffect(() => {
     fetchOffers();
+    const fetchProducts = async () => {
+      try {
+        const records = await pb.collection('products').getFullList({
+          filter: 'isDeleted != true && status != false',
+          sort: 'name',
+          $autoCancel: false,
+        });
+        setProducts(records);
+      } catch (error) {
+        console.error('Error fetching products for offers:', error);
+        toast({ title: 'Error', description: 'Failed to load products for the offer picker.', variant: 'destructive' });
+      }
+    };
+    fetchProducts();
   }, []);
+
+  const getProductImage = (product) => {
+    const image = product?.images?.[product.primary_image_index || 0]
+      || product?.photos?.[0]
+      || product?.image;
+    return image ? pb.files.getUrl(product, image, { thumb: '100x100' }) : null;
+  };
+
+  const productById = new Map(products.map((product) => [product.id, product]));
 
   const handleOpenDialog = (offer = null) => {
     if (offer) {
@@ -105,6 +129,10 @@ const OffersManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.product_id) {
+      toast({ title: 'Product required', description: 'Choose the product this offer applies to.', variant: 'destructive' });
+      return;
+    }
     setIsSubmitting(true);
     
     try {
@@ -175,7 +203,7 @@ const OffersManagement = () => {
         <Table>
           <TableHeader className="bg-muted/20">
             <TableRow>
-              <TableHead>Product ID</TableHead>
+              <TableHead>Product</TableHead>
               <TableHead>Discount</TableHead>
               <TableHead>Start Date</TableHead>
               <TableHead>End Date</TableHead>
@@ -202,9 +230,17 @@ const OffersManagement = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              offers.map((offer) => (
+              offers.map((offer) => {
+                const product = productById.get(offer.product_id);
+                const imageUrl = getProductImage(product);
+                return (
                 <TableRow key={offer.id}>
-                  <TableCell className="font-medium text-xs font-mono">{offer.product_id}</TableCell>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-3">
+                      {imageUrl ? <img src={imageUrl} alt="" className="h-9 w-9 rounded-md object-cover border" /> : <ImageIcon className="h-5 w-5 text-muted-foreground" />}
+                      <span>{product?.name || 'Product unavailable'}</span>
+                    </div>
+                  </TableCell>
                   <TableCell className="font-bold">
                     {offer.discount_type === 'percentage' ? `${offer.discount_value}%` : `₹${offer.discount_value}`}
                   </TableCell>
@@ -230,7 +266,8 @@ const OffersManagement = () => {
                     </div>
                   </TableCell>
                 </TableRow>
-              ))
+                );
+              })
             )}
           </TableBody>
         </Table>
@@ -265,14 +302,25 @@ const OffersManagement = () => {
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4 mt-4">
             <div className="space-y-2">
-              <Label htmlFor="product_id">Product ID *</Label>
-              <Input 
-                id="product_id" 
-                value={formData.product_id} 
-                onChange={(e) => setFormData({...formData, product_id: e.target.value})} 
-                required 
-                placeholder="Enter PocketBase Product ID"
-              />
+              <Label htmlFor="product_id">Product *</Label>
+              <Select value={formData.product_id} onValueChange={(product_id) => setFormData({ ...formData, product_id })} required>
+                <SelectTrigger id="product_id">
+                  <SelectValue placeholder="Select a product" />
+                </SelectTrigger>
+                <SelectContent>
+                  {products.map((product) => {
+                    const imageUrl = getProductImage(product);
+                    return (
+                      <SelectItem key={product.id} value={product.id}>
+                        <span className="flex items-center gap-2">
+                          {imageUrl ? <img src={imageUrl} alt="" className="h-7 w-7 rounded object-cover" /> : <ImageIcon className="h-4 w-4 text-muted-foreground" />}
+                          <span>{product.name}</span>
+                        </span>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
             </div>
             
             <div className="grid grid-cols-2 gap-4">

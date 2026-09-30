@@ -48,8 +48,27 @@ const CheckoutPage = () => {
   const [showOffers, setShowOffers] = useState(false);
   const [availableCoupons, setAvailableCoupons] = useState([]);
   const [loadingCoupons, setLoadingCoupons] = useState(false);
+  const [activeOffers, setActiveOffers] = useState([]);
 
   const shippingCost = 50;
+
+  useEffect(() => {
+    const loadActiveOffers = async () => {
+      try {
+        const now = new Date();
+        const offers = await pb.collection('offers').getFullList({ sort: '-created', $autoCancel: false });
+        setActiveOffers(offers.filter((offer) => {
+          const isActive = offer.is_active !== false && offer.active !== false;
+          const startsOn = !offer.start_date || new Date(offer.start_date) <= now;
+          const endsOn = !offer.end_date || new Date(offer.end_date) >= now;
+          return isActive && startsOn && endsOn && offer.product_id;
+        }));
+      } catch (error) {
+        console.error('Failed to load automatic offers:', error);
+      }
+    };
+    loadActiveOffers();
+  }, []);
 
   useEffect(() => {
     if (paymentSuccessRef.current) return;
@@ -147,8 +166,24 @@ const CheckoutPage = () => {
   const inclusiveSum = calculateInclusiveSum(cartItems);
   const exclusiveSubtotal = calculateSubtotal(cartItems);
   const extractedTax = calculateExtractedTax(cartItems);
-  const couponDiscount = appliedCoupon ? Number(calculateDiscount(appliedCoupon, inclusiveSum)) || 0 : 0;
-  const totalAmount = calculateOrderTotal(exclusiveSubtotal, extractedTax, shippingCost, couponDiscount);
+  const appliedOffers = cartItems.flatMap((item) => {
+    const itemTotal = Number(item.price || 0) * Number(item.quantity || 0);
+    const matchingOffers = activeOffers.filter((offer) => offer.product_id === item.id);
+    if (!matchingOffers.length || itemTotal <= 0) return [];
+
+    const offer = matchingOffers.reduce((best, candidate) => {
+      const bestDiscount = best.discount_type === 'percentage' ? itemTotal * Number(best.discount_value || 0) / 100 : Number(best.discount_value || 0) * Number(item.quantity || 0);
+      const candidateDiscount = candidate.discount_type === 'percentage' ? itemTotal * Number(candidate.discount_value || 0) / 100 : Number(candidate.discount_value || 0) * Number(item.quantity || 0);
+      return candidateDiscount > bestDiscount ? candidate : best;
+    });
+    const discount = offer.discount_type === 'percentage'
+      ? itemTotal * Number(offer.discount_value || 0) / 100
+      : Number(offer.discount_value || 0) * Number(item.quantity || 0);
+    return [{ id: offer.id, productName: item.name, discount: Math.max(0, Math.min(discount, itemTotal)), offer }];
+  });
+  const offerDiscount = appliedOffers.reduce((sum, offer) => sum + offer.discount, 0);
+  const couponDiscount = appliedCoupon ? Number(calculateDiscount(appliedCoupon, inclusiveSum - offerDiscount)) || 0 : 0;
+  const totalAmount = calculateOrderTotal(exclusiveSubtotal, extractedTax, shippingCost, couponDiscount + offerDiscount);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -242,7 +277,9 @@ const CheckoutPage = () => {
         shippingAddress: shippingAddress,
         shippingMethod: customerDetails.shippingMethod || 'Standard',
         couponCode: appliedCoupon?.code || '',
-        couponDiscount: couponDiscount
+        couponDiscount: couponDiscount,
+        offerDiscount,
+        appliedOfferIds: appliedOffers.map((offer) => offer.id),
       };
 
       const response = await apiServerClient.fetch('/razorpay/create-order', {
@@ -323,7 +360,10 @@ const CheckoutPage = () => {
         tax_amount: requestData.taxAmount,
         total_amount: requestData.totalAmount,
         coupon_code: requestData.couponCode,
-        discount_amount: requestData.couponDiscount,
+        discount_amount: requestData.couponDiscount + requestData.offerDiscount,
+        coupon_discount: requestData.couponDiscount,
+        offer_discount: requestData.offerDiscount,
+        applied_offer_ids: requestData.appliedOfferIds,
         customer_name: requestData.customerName,
         customer_email: requestData.customerEmail,
         customer_phone: requestData.customerPhone,
@@ -739,6 +779,12 @@ const CheckoutPage = () => {
                         <span className="font-extrabold text-success">-{formatPrice(couponDiscount)}</span>
                       </div>
                     )}
+                    {appliedOffers.map((appliedOffer) => (
+                      <div key={appliedOffer.id} className="flex justify-between">
+                        <span className="text-success font-bold">Offer: {appliedOffer.productName}</span>
+                        <span className="font-extrabold text-success">-{formatPrice(appliedOffer.discount)}</span>
+                      </div>
+                    ))}
                   </div>
 
                   <div className="bg-muted/50 rounded-xl p-5 mt-4 border border-border/50">

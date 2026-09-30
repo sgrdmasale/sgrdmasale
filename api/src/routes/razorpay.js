@@ -130,6 +130,33 @@ async function calculateCouponDiscount(code, cartTotal) {
   return Math.max(0, Math.min(discount, cartTotal));
 }
 
+// Product offers are automatic. Always derive them from the current catalogue
+// and offer records instead of accepting a discount amount from the browser.
+async function calculateOfferDiscount(items) {
+  const now = new Date();
+  const offers = await pb.collection('offers').getFullList({ sort: '-created' });
+  let discount = 0;
+
+  for (const item of items) {
+    const itemTotal = Number(item.price || 0) * Number(item.quantity || 0);
+    const matchingOffers = offers.filter((offer) => {
+      const active = offer.is_active !== false && offer.active !== false;
+      const startsOn = !offer.start_date || new Date(offer.start_date) <= now;
+      const endsOn = !offer.end_date || new Date(offer.end_date) >= now;
+      return active && startsOn && endsOn && offer.product_id === item.id;
+    });
+    if (!matchingOffers.length || itemTotal <= 0) continue;
+
+    const offerDiscount = (offer) => offer.discount_type === 'percentage'
+      ? itemTotal * Number(offer.discount_value || 0) / 100
+      : Number(offer.discount_value || 0) * Number(item.quantity || 0);
+    const bestOffer = matchingOffers.reduce((best, offer) => offerDiscount(offer) > offerDiscount(best) ? offer : best);
+    discount += Math.max(0, Math.min(offerDiscount(bestOffer), itemTotal));
+  }
+
+  return discount;
+}
+
 /**
  * Extract item name with fallback logic
  * Tries: name → title → product_name → productName → item_name → nested product.name → "Unknown Item"
@@ -304,8 +331,9 @@ router.post('/create-order', requireCustomer, async (req, res) => {
 
   const expectedTax = calculateExtractedTaxFromItems(authoritativeItems);
   const expectedSubtotalExclusive = calculateSubtotalFromItems(authoritativeItems);
-  const couponDiscount = await calculateCouponDiscount(req.body.couponCode, expectedSubtotalExclusive + expectedTax);
-  const expectedTotal = expectedSubtotalExclusive + expectedTax + shippingCost - couponDiscount;
+  const offerDiscount = await calculateOfferDiscount(authoritativeItems);
+  const couponDiscount = await calculateCouponDiscount(req.body.couponCode, expectedSubtotalExclusive + expectedTax - offerDiscount);
+  const expectedTotal = expectedSubtotalExclusive + expectedTax + shippingCost - couponDiscount - offerDiscount;
 
   logger.info(`Tax Verification -> Frontend Sent: Subtotal: ${subtotal}, Tax: ${taxAmount}, Total: ${totalAmount}`);
   logger.info(`Tax Verification -> Backend Calc: Subtotal(Excl): ${expectedSubtotalExclusive}, Tax: ${expectedTax}, Total: ${expectedTotal}`);
@@ -445,8 +473,9 @@ router.post('/verify-payment', requireCustomer, async (req, res) => {
   const validatedTaxAmount = calculateExtractedTaxFromItems(formattedItems);
 
   const validatedShippingCost = shippingCost;
-  const validatedCouponDiscount = await calculateCouponDiscount(coupon_code, validatedSubtotal + validatedTaxAmount);
-  const validatedTotalAmount = validatedSubtotal + validatedTaxAmount + validatedShippingCost - validatedCouponDiscount;
+  const validatedOfferDiscount = await calculateOfferDiscount(formattedItems);
+  const validatedCouponDiscount = await calculateCouponDiscount(coupon_code, validatedSubtotal + validatedTaxAmount - validatedOfferDiscount);
+  const validatedTotalAmount = validatedSubtotal + validatedTaxAmount + validatedShippingCost - validatedCouponDiscount - validatedOfferDiscount;
 
   if (Math.abs(ensureNumber(total_amount, 0) - validatedTotalAmount) > 0.01) {
     return res.status(400).json({ success: false, error: 'The submitted order total does not match the server calculation' });
@@ -502,6 +531,7 @@ router.post('/verify-payment', requireCustomer, async (req, res) => {
     shipping_method: ensureString(shipping_method, 'standard'),
     coupon_code: coupon_code ? ensureString(coupon_code) : null,
     coupon_discount: validatedCouponDiscount,
+    offer_discount: validatedOfferDiscount,
     billing_details: billing_details || {},
     shipping_address: validatedShippingAddress,
   };
